@@ -77,6 +77,7 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
 
   override fun changeCameraMode(cameraMode: CameraMode) {
     this.cameraMode = cameraMode
+    flashMode = ImageCapture.FLASH_MODE_OFF
     startCamera()
   }
 
