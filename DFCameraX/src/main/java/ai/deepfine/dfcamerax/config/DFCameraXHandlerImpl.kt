@@ -1,13 +1,8 @@
 package ai.deepfine.dfcamerax.config
 
+import ai.deepfine.dfcamerax.utils.CameraMode
 import ai.deepfine.dfcamerax.utils.CameraTimer
-import ai.deepfine.dfcamerax.utils.MainExecutor
-import android.content.ContentValues
 import android.content.Context
-import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
-import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Size
 import android.view.OrientationEventListener
@@ -21,11 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.File
 import java.util.concurrent.ExecutionException
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
 
 /**
  * @Description
@@ -36,36 +27,31 @@ import kotlin.math.min
 class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private val context: Context) : DFCameraXHandler {
   companion object {
     private const val TAG = "DFCameraX"
-
-    private const val RATIO_4_3_VALUE = 4.0 / 3.0 // aspect ratio 4x3
-    private const val RATIO_16_9_VALUE = 16.0 / 9.0 // aspect ratio 16x9
   }
 
+  private lateinit var cameraMode: CameraMode
   private val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
   private lateinit var cameraProvider: ProcessCameraProvider
   private lateinit var preview: Preview
   private lateinit var camera: Camera
 
   private lateinit var previewView: PreviewView
-  private lateinit var imageCapture: ImageCapture
-  private lateinit var imageAnalyzer: ImageAnalysis
 
   private var _lensFacing: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
   private var _timer: CameraTimer = CameraTimer.OFF
   private var timerCallback: CameraTimer.Callback? = null
   private var targetResolution: Size? = null
 
-  private var outputDirectory: String? = null
-
+  private var imageOutputDirectory: String? = null
+  private var videoOutputDirectory: String? = null
 
   override fun startCamera() {
     cameraProviderFuture.addListener({
       fetchCameraProvider {
         return@fetchCameraProvider
       }
-      configurePreview()
-      configureImageCapture()
-      configureImageAnalysis()
+
+      preview = cameraMode.createPreview(previewView, targetResolution)
 
       cameraProvider.unbindAll()
 
@@ -85,35 +71,13 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
     }
   }
 
-  private fun configurePreview() {
-    preview = Preview.Builder().apply {
-      setTargetRotation(getRotation())
-      targetResolution?.let {
-        setTargetResolution(it)
-      } ?: setTargetAspectRatio(getAspectRatio())
-    }.build()
+  override fun setCameraMode(cameraMode: CameraMode) {
+    this.cameraMode = cameraMode
   }
 
-  private fun configureImageCapture() {
-    imageCapture = ImageCapture.Builder().apply {
-      setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
-      setFlashMode(_flashMode)
-      targetResolution?.let {
-        setTargetResolution(it)
-      } ?: setTargetAspectRatio(getAspectRatio())
-      setTargetRotation(getRotation())
-    }.build()
-  }
-
-  private fun configureImageAnalysis() {
-    imageAnalyzer = ImageAnalysis.Builder().apply {
-      setTargetRotation(getRotation())
-      targetResolution?.let {
-        setTargetResolution(it)
-      } ?: setTargetAspectRatio(getAspectRatio())
-
-      setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-    }.build()
+  override fun changeCameraMode(cameraMode: CameraMode) {
+    this.cameraMode = cameraMode
+    startCamera()
   }
 
   private fun bindToLifecycle() {
@@ -122,8 +86,7 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
         lifecycleOwner,
         lensFacing,
         preview,
-        imageCapture,
-        imageAnalyzer
+        *cameraMode.createUseCases(previewView, targetResolution).toTypedArray()
       )
 
       preview.setSurfaceProvider(previewView.surfaceProvider)
@@ -131,23 +94,6 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
       Log.e(TAG, "Failed to bind use cases : $e")
     }
   }
-
-  private fun getAspectRatio(): Int {
-    val metrics = DisplayMetrics().also {
-      previewView.display.getRealMetrics(it)
-    }
-
-    val width = metrics.widthPixels
-    val height = metrics.heightPixels
-
-    val previewRatio = max(width, height).toDouble() / min(width, height)
-    if (abs(previewRatio - RATIO_4_3_VALUE) <= abs(previewRatio - RATIO_16_9_VALUE)) {
-      return AspectRatio.RATIO_4_3
-    }
-    return AspectRatio.RATIO_16_9
-  }
-
-  private fun getRotation(): Int = previewView.display.rotation
 
 
   private val orientationEventListener = object : OrientationEventListener(context) {
@@ -159,7 +105,7 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
         else -> Surface.ROTATION_0
       }
 
-      imageCapture.targetRotation = rotation
+      cameraMode.setTargetRotation(rotation)
     }
   }
 
@@ -182,20 +128,11 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
       startCamera()
     }
 
-
-//  override fun setLensFacing(cameraSelector: CameraSelector) {
-//    this.lensFacing = cameraSelector
-//    startCamera()
-//  }
-
   private var _flashMode: Int = ImageCapture.FLASH_MODE_OFF
   override var flashMode: Int = _flashMode
     get() = _flashMode
     set(value) {
       _flashMode = value
-      if (::imageCapture.isInitialized) {
-        imageCapture.flashMode = value
-      }
 
       if (::camera.isInitialized) {
         camera.cameraControl.enableTorch(value != ImageCapture.FLASH_MODE_OFF)
@@ -209,8 +146,8 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
     startCamera()
   }
 
-  override fun setOutputDirectory(path: String) {
-    this.outputDirectory = path
+  override fun setImageOutputDirectory(path: String) {
+    this.imageOutputDirectory = path
   }
 
   override var timer: CameraTimer = _timer
@@ -220,73 +157,53 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
       field = value
     }
 
+  override fun setVideoOutputDirectory(path: String) {
+    this.videoOutputDirectory = path
+  }
+
   override fun setOnTimerCallback(callback: CameraTimer.Callback) {
     this.timerCallback = callback
   }
 
   override fun takePicture() {
+    runTimer {
+      (cameraMode as? CameraMode.Image)?.takePicture(context, imageOutputDirectory, imageSavedCallback)
+    }
+  }
+
+  private lateinit var imageSavedCallback: ImageCapture.OnImageSavedCallback
+  override fun setOnImageSavedCallback(callback: ImageCapture.OnImageSavedCallback) {
+    this.imageSavedCallback = callback
+  }
+
+  override fun recordVideo() {
+    runTimer {
+      (cameraMode as? CameraMode.Video)?.recordVideo(context, videoOutputDirectory, videoSavedCallback)
+    }
+  }
+
+  override fun stopRecording() {
+    (cameraMode as? CameraMode.Video)?.stopRecording()
+  }
+
+  private lateinit var videoSavedCallback: VideoCapture.OnVideoSavedCallback
+  override fun setOnVideoSavedCallback(callback: VideoCapture.OnVideoSavedCallback) {
+    this.videoSavedCallback = callback
+  }
+
+  private fun runTimer(block: () -> Unit) {
     lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
       when (timer) {
-        CameraTimer.OFF -> captureImage()
+        CameraTimer.OFF -> block()
         else -> {
           for (i in timer.seconds downTo 1) {
             timerCallback?.onTimerChanged(i)
             delay(1000)
           }
           timerCallback?.onTimerChanged(0)
-          captureImage()
+          block()
         }
       }
     }
-  }
-
-  private fun captureImage() {
-    val outputOptions = if (outputDirectory == null) {
-      optionsOnGallery()
-    } else {
-      optionsOnSpecificDirectory(outputDirectory!!)
-    }.build()
-
-
-    imageCapture.takePicture(
-      outputOptions,
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) context.mainExecutor else MainExecutor(),
-      callback
-    )
-  }
-
-  private fun optionsOnGallery(): ImageCapture.OutputFileOptions.Builder {
-    val directory = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      Environment.DIRECTORY_DCIM
-    } else {
-      "${context.getExternalFilesDir(Environment.DIRECTORY_DCIM)}"
-    }
-
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      val contentValues = ContentValues().apply {
-        put(MediaStore.MediaColumns.DISPLAY_NAME, System.currentTimeMillis())
-        put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
-        put(MediaStore.MediaColumns.RELATIVE_PATH, directory)
-      }
-
-      val contentResolver = context.contentResolver
-
-      val contentUri = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-
-      ImageCapture.OutputFileOptions.Builder(contentResolver, contentUri, contentValues)
-    } else {
-      optionsOnSpecificDirectory(directory)
-    }
-  }
-
-  private fun optionsOnSpecificDirectory(directory: String): ImageCapture.OutputFileOptions.Builder {
-    File(directory).mkdirs()
-    val file = File(directory, "${System.currentTimeMillis()}.png")
-    return ImageCapture.OutputFileOptions.Builder(file)
-  }
-
-  private lateinit var callback: ImageCapture.OnImageSavedCallback
-  override fun setOnImageSavedCallback(callback: ImageCapture.OnImageSavedCallback) {
-    this.callback = callback
   }
 }
