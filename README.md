@@ -3,7 +3,7 @@
 ### 초기화
 
 ```groovy
-   def camerax_version = "1.1.0-beta01"
+def camerax_version = "1.1.0-beta01"
 implementation "androidx.camera:camera-core:${camerax_version}"
 implementation "androidx.camera:camera-camera2:${camerax_version}"
 implementation "androidx.camera:camera-lifecycle:${camerax_version}"
@@ -14,18 +14,21 @@ implementation "androidx.camera:camera-extensions:${camerax_version}"
 ```
 
 ```kotlin
-
 cameraHandler = DFCameraXHandler.Builder(this, this)
   .setCameraMode(CameraMode.Image) // 사진, 비디오 모드 설정
   .setPreviewView(binding.previewView)
-//      .setImageOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString()) // 이미지 저장 폴더 설정 
-//      .setVideoOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_MOVIES).toString()) // 동영상 저장 폴더 설정 
+  .setImageOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString()) // 이미지 저장 폴더 설정 (Default : DCIM)
+  .setVideoOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_MOVIES).toString()) // 동영상 저장 폴더 설정 (Default : Movie) 
   .setOnImageSavedCallback(onImageSavedCallback) // 이미지 저장 콜백 
   .setOnVideoSavedCallback(onVideoSavedCallback) // 동영상 저장 콜백
   .build()
 
 cameraHandler.startCamera() // 카메라 실행
+```
 
+### 사용법
+
+```kotlin
 cameraHandler.changeCameraMode(CameraMode.Image or CameraMode.Video) // 사진, 비디오 모드 변경
 
 cameraHandler.setTargetResolution(Size) // 화질 변경
