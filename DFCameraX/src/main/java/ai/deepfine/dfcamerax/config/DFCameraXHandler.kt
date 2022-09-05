@@ -34,7 +34,8 @@ interface DFCameraXHandler {
   var flashMode: Int
 
   // 타이머 설정
-  fun setTimer(timer: CameraTimer, callback: CameraTimer.Callback? = null)
+  var timer: CameraTimer
+  fun setOnTimerCallback(callback: CameraTimer.Callback)
   fun takePicture()
 
   class Builder(lifecycleOwner: LifecycleOwner, context: Context) {

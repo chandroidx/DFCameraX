@@ -35,7 +35,8 @@ class MainActivity : AppCompatActivity() {
 
 
   private fun setTimer() {
-    cameraHandler.setTimer(CameraTimer.OFF) { leftSeconds -> Log.d("PYC", "${leftSeconds}초 남았습니다.") }
+    cameraHandler.timer = CameraTimer.OFF
+    cameraHandler.setOnTimerCallback { leftSeconds -> Log.d("PYC", "${leftSeconds}초 남았습니다.") }
   }
 
   fun controlFlash() {

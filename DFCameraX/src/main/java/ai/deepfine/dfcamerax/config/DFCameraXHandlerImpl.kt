@@ -51,7 +51,7 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
   private lateinit var imageAnalyzer: ImageAnalysis
 
   private var _lensFacing: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-  private var timer: CameraTimer = CameraTimer.OFF
+  private var _timer: CameraTimer = CameraTimer.OFF
   private var timerCallback: CameraTimer.Callback? = null
   private var targetResolution: Size? = null
 
@@ -213,11 +213,16 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
     this.outputDirectory = path
   }
 
-  override fun setTimer(timer: CameraTimer, callback: CameraTimer.Callback?) {
-    this.timer = timer
+  override var timer: CameraTimer = _timer
+    get() = _timer
+    set(value) {
+      _timer = timer
+      field = value
+    }
+
+  override fun setOnTimerCallback(callback: CameraTimer.Callback) {
     this.timerCallback = callback
   }
-
 
   override fun takePicture() {
     lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
