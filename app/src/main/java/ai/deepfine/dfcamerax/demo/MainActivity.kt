@@ -8,6 +8,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.util.Size
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
@@ -57,10 +58,21 @@ class MainActivity : AppCompatActivity() {
 
   fun startRecording() {
     cameraHandler.recordVideo()
+    binding.videoModeButton.visibility = View.GONE
+    binding.imageModeButton.visibility = View.GONE
+    binding.takePictureButton.visibility = View.GONE
+    binding.startRecordingButton.visibility = View.GONE
+    binding.stopRecordingButton.visibility = View.VISIBLE
+    binding.toggleButton.visibility = View.GONE
   }
 
   fun stopRecording() {
     cameraHandler.stopRecording()
+    binding.videoModeButton.visibility = View.GONE
+    binding.imageModeButton.visibility = View.VISIBLE
+    binding.startRecordingButton.visibility = View.VISIBLE
+    binding.stopRecordingButton.visibility = View.GONE
+    binding.toggleButton.visibility = View.VISIBLE
   }
 
   fun toggle() {
@@ -70,8 +82,22 @@ class MainActivity : AppCompatActivity() {
     }
   }
 
-  fun changeMode() {
+  fun changeToImageMode() {
+    cameraHandler.changeCameraMode(CameraMode.Image)
+    binding.videoModeButton.visibility = View.VISIBLE
+    binding.imageModeButton.visibility = View.GONE
+    binding.takePictureButton.visibility = View.VISIBLE
+    binding.startRecordingButton.visibility = View.GONE
+    binding.stopRecordingButton.visibility = View.GONE
+  }
+
+  fun changeToVideoMode() {
     cameraHandler.changeCameraMode(CameraMode.Video)
+    binding.videoModeButton.visibility = View.GONE
+    binding.imageModeButton.visibility = View.VISIBLE
+    binding.takePictureButton.visibility = View.GONE
+    binding.startRecordingButton.visibility = View.VISIBLE
+    binding.stopRecordingButton.visibility = View.GONE
   }
 
   private fun setTargetResolution() {

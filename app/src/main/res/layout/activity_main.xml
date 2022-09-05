@@ -19,6 +19,7 @@
             android:layout_height="match_parent" />
 
         <Button
+            android:id="@+id/flashButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="@{()->view.controlFlash()}"
@@ -27,45 +28,66 @@
             app:layout_constraintStart_toStartOf="parent" />
 
         <Button
+            android:id="@+id/takePictureButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="@{()->view.capture()}"
             android:text="사진 촬영"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <Button
+            android:id="@+id/startRecordingButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="@{()->view.startRecording()}"
             android:text="녹화 시작"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <Button
+            android:id="@+id/stopRecordingButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="@{()->view.stopRecording()}"
             android:text="녹화 중지"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <Button
+            android:id="@+id/toggleButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="@{()->view.toggle()}"
-            android:text="TOGGLE"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:text="전환"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <Button
+            android:id="@+id/imageModeButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="@{()->view.changeMode()}"
-            android:text="사진/비디오"
+            android:layout_marginEnd="10dp"
+            android:onClick="@{()->view.changeToImageMode()}"
+            android:text="사진 모드"
+            app:layout_constraintEnd_toStartOf="@id/videoModeButton"
+            app:layout_constraintHorizontal_chainStyle="packed"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/videoModeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{()->view.changeToVideoMode()}"
+            android:text="비디오 모드"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/imageModeButton"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
