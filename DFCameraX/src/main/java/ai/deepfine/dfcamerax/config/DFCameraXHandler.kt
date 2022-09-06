@@ -8,8 +8,12 @@ import android.util.Size
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.VideoCapture
+import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
+import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
+import java.io.File
+import kotlin.math.max
 
 /**
  * @Description
@@ -25,15 +29,19 @@ interface DFCameraXHandler {
 
   fun enableAutoRotation(enabled: Boolean)
 
-  // 화질 설정
-  fun setTargetResolution(size: Size)
+  // 프리뷰 화질 설정
+  fun setPreviewTargetResolution(targetResolution: Size)
+
+  // 이미지 캡쳐 사이즈 설정
+  fun setImageCaptureTargetResolution(targetResolution: Size)
+
 
   // 파일 저장 경로
   fun setImageOutputDirectory(path: String)
   fun setVideoOutputDirectory(path: String)
 
   fun setOnImageSavedCallback(callback: ImageCapture.OnImageSavedCallback)
-  fun setOnVideoSavedCallback(callback: VideoCapture.OnVideoSavedCallback)
+  fun setOnVideoSavedCallback(callback: Consumer<VideoRecordEvent>)
 
   // 전면, 후면 카메라 설정
   var lensFacing: CameraSelector
@@ -66,7 +74,7 @@ interface DFCameraXHandler {
       return this
     }
 
-    fun setOnVideoSavedCallback(callback: VideoCapture.OnVideoSavedCallback): Builder {
+    fun setOnVideoSavedCallback(callback: Consumer<VideoRecordEvent>): Builder {
       handler.setOnVideoSavedCallback(callback)
       return this
     }
@@ -77,7 +85,11 @@ interface DFCameraXHandler {
     }
 
     fun setVideoOutputDirectory(outputDirectory: String): Builder {
-      handler.setImageOutputDirectory(outputDirectory)
+      with(File(outputDirectory)) {
+        if (!exists())
+          mkdir()
+      }
+      handler.setVideoOutputDirectory(outputDirectory)
       return this
     }
 
@@ -86,11 +98,15 @@ interface DFCameraXHandler {
       return this
     }
 
-    fun setTargetResolution(size: Size): Builder {
-      handler.setTargetResolution(size)
+    fun setPreviewTargetResolution(targetResolution: Size): Builder {
+      handler.setPreviewTargetResolution(targetResolution)
       return this
     }
 
+    fun setImageCaptureTargetResolution(targetResolution: Size): Builder {
+      handler.setImageCaptureTargetResolution(targetResolution)
+      return this
+    }
 
     fun build(): DFCameraXHandler = handler
   }

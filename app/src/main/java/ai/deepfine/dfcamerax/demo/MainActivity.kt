@@ -6,6 +6,7 @@ import ai.deepfine.dfcamerax.config.DFCameraXHandler
 import ai.deepfine.dfcamerax.utils.CameraMode
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.util.Size
 import android.view.View
@@ -15,6 +16,8 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.VideoCapture
+import androidx.camera.video.VideoRecordEvent
+import androidx.core.util.Consumer
 import androidx.databinding.DataBindingUtil
 
 class MainActivity : AppCompatActivity() {
@@ -28,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     cameraHandler = DFCameraXHandler.Builder(this, this)
       .setCameraMode(CameraMode.Image)
       .setPreviewView(binding.previewView)
+      .setPreviewTargetResolution(Size(360, 640))
 //      .setImageOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString())
 //      .setVideoOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_MOVIES).toString())
       .setOnImageSavedCallback(onImageSavedCallback)
@@ -35,7 +39,6 @@ class MainActivity : AppCompatActivity() {
       .build()
 
     setTimer()
-//    setTargetResolution()
     cameraHandler.startCamera()
   }
 
@@ -58,21 +61,11 @@ class MainActivity : AppCompatActivity() {
 
   fun startRecording() {
     cameraHandler.recordVideo()
-    binding.videoModeButton.visibility = View.GONE
-    binding.imageModeButton.visibility = View.GONE
-    binding.takePictureButton.visibility = View.GONE
-    binding.startRecordingButton.visibility = View.GONE
-    binding.stopRecordingButton.visibility = View.VISIBLE
-    binding.toggleButton.visibility = View.GONE
   }
 
   fun stopRecording() {
     cameraHandler.stopRecording()
-    binding.videoModeButton.visibility = View.GONE
-    binding.imageModeButton.visibility = View.VISIBLE
-    binding.startRecordingButton.visibility = View.VISIBLE
-    binding.stopRecordingButton.visibility = View.GONE
-    binding.toggleButton.visibility = View.VISIBLE
+
   }
 
   fun toggle() {
@@ -100,10 +93,6 @@ class MainActivity : AppCompatActivity() {
     binding.stopRecordingButton.visibility = View.GONE
   }
 
-  private fun setTargetResolution() {
-    cameraHandler.setTargetResolution(Size(360, 640))
-  }
-
   private val onImageSavedCallback by lazy {
     object : ImageCapture.OnImageSavedCallback {
       override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
@@ -111,23 +100,34 @@ class MainActivity : AppCompatActivity() {
       }
 
       override fun onError(exception: ImageCaptureException) {
-        Log.e("PYC", exception.toString())
         Toast.makeText(this@MainActivity, exception.toString(), Toast.LENGTH_SHORT).show()
       }
     }
   }
 
   private val onVideoSavedCallback by lazy {
-    object : VideoCapture.OnVideoSavedCallback {
-      @SuppressLint("RestrictedApi")
-      override fun onVideoSaved(outputFileResults: VideoCapture.OutputFileResults) {
-        Toast.makeText(this@MainActivity, outputFileResults.savedUri.toString(), Toast.LENGTH_SHORT).show()
-      }
-
-      @SuppressLint("RestrictedApi")
-      override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
-        Log.e("PYC", cause.toString())
-        Toast.makeText(this@MainActivity, cause.toString(), Toast.LENGTH_SHORT).show()
+    Consumer<VideoRecordEvent> { event ->
+      when (event) {
+        is VideoRecordEvent.Start -> {
+          Log.d("PYC", "Start : ${event.recordingStats}")
+          binding.videoModeButton.visibility = View.GONE
+          binding.imageModeButton.visibility = View.GONE
+          binding.takePictureButton.visibility = View.GONE
+          binding.startRecordingButton.visibility = View.GONE
+          binding.stopRecordingButton.visibility = View.VISIBLE
+          binding.toggleButton.visibility = View.GONE
+        }
+        is VideoRecordEvent.Resume -> Log.d("PYC", "Resume : ${event.recordingStats}")
+        is VideoRecordEvent.Pause -> Log.d("PYC", "Pause : ${event.recordingStats}")
+        is VideoRecordEvent.Finalize -> {
+          binding.videoModeButton.visibility = View.GONE
+          binding.imageModeButton.visibility = View.VISIBLE
+          binding.startRecordingButton.visibility = View.VISIBLE
+          binding.stopRecordingButton.visibility = View.GONE
+          binding.toggleButton.visibility = View.VISIBLE
+          Log.d("PYC", "Finalize : ${event.outputResults.outputUri}")
+        }
+        is VideoRecordEvent.Status -> Log.d("PYC", "Status : ${event.recordingStats}")
       }
     }
   }

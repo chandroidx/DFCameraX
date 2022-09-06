@@ -9,14 +9,17 @@ import android.view.OrientationEventListener
 import android.view.Surface
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.ExecutionException
+import kotlin.math.max
 
 /**
  * @Description
@@ -40,7 +43,9 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
   private var _lensFacing: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
   private var _timer: CameraTimer = CameraTimer.OFF
   private var timerCallback: CameraTimer.Callback? = null
-  private var targetResolution: Size? = null
+
+  private var _previewTargetResolution: Size? = null
+  private var _imageCaptureTargetResolution: Size? = null
 
   private var imageOutputDirectory: String? = null
   private var videoOutputDirectory: String? = null
@@ -51,7 +56,7 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
         return@fetchCameraProvider
       }
 
-      preview = cameraMode.createPreview(previewView, targetResolution)
+      preview = cameraMode.createPreview(previewView, _previewTargetResolution)
 
       cameraProvider.unbindAll()
 
@@ -87,7 +92,7 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
         lifecycleOwner,
         lensFacing,
         preview,
-        *cameraMode.createUseCases(previewView, targetResolution).toTypedArray()
+        *cameraMode.createUseCases(previewView, _imageCaptureTargetResolution).toTypedArray()
       )
 
       preview.setSurfaceProvider(previewView.surfaceProvider)
@@ -141,11 +146,14 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
       field = value
     }
 
-  override fun setTargetResolution(size: Size) {
-    this.targetResolution = size
-
-    startCamera()
+  override fun setPreviewTargetResolution(targetResolution: Size) {
+    _previewTargetResolution = targetResolution
   }
+
+  override fun setImageCaptureTargetResolution(targetResolution: Size) {
+    _imageCaptureTargetResolution = targetResolution
+  }
+
 
   override fun setImageOutputDirectory(path: String) {
     this.imageOutputDirectory = path
@@ -187,8 +195,8 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
     (cameraMode as? CameraMode.Video)?.stopRecording()
   }
 
-  private lateinit var videoSavedCallback: VideoCapture.OnVideoSavedCallback
-  override fun setOnVideoSavedCallback(callback: VideoCapture.OnVideoSavedCallback) {
+  private lateinit var videoSavedCallback: Consumer<VideoRecordEvent>
+  override fun setOnVideoSavedCallback(callback: Consumer<VideoRecordEvent>) {
     this.videoSavedCallback = callback
   }
 
