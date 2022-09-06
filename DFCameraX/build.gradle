@@ -2,8 +2,28 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
+    id 'maven-publish'
 }
 
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'ai.deepfine.dfcamerax'
+                artifactId = 'DFCameraX'
+                version = '1.0'
+            }
+
+            debug(MavenPublication) {
+                from components.release
+                groupId = 'ai.deepfine.dfcamerax'
+                artifactId = 'DFCameraX'
+                version = '1.0'
+            }
+        }
+    }
+}
 android {
     compileSdk 32
 
@@ -16,8 +36,17 @@ android {
     }
 
     buildTypes {
-        release {
+        debug {
+            debuggable true
             minifyEnabled false
+            zipAlignEnabled false
+            shrinkResources false
+        }
+        release {
+            debuggable false
+            minifyEnabled true
+            zipAlignEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
