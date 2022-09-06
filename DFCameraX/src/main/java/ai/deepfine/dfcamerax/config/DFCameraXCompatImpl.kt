@@ -3,7 +3,6 @@ package ai.deepfine.dfcamerax.config
 import ai.deepfine.dfcamerax.utils.CameraMode
 import ai.deepfine.dfcamerax.utils.CameraTimer
 import android.content.Context
-import android.icu.lang.UCharacter.GraphemeClusterBreak.L
 import android.util.Log
 import android.util.Size
 import android.view.OrientationEventListener
@@ -22,7 +21,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.ExecutionException
-import kotlin.math.max
 
 /**
  * @Description
@@ -30,7 +28,7 @@ import kotlin.math.max
  * @since 2022-09-05
  * @version 1.0.0
  */
-class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private val context: Context) : DFCameraXHandler {
+internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, private val context: Context) : DFCameraXCompat {
   companion object {
     private const val TAG = "DFCameraX"
   }
@@ -97,7 +95,7 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
         lifecycleOwner,
         lensFacing,
         preview,
-        *createUseCases()
+        *createUseCases(),
       )
 
       preview.setSurfaceProvider(previewView.surfaceProvider)
@@ -210,8 +208,8 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
   }
 
   private lateinit var videoSavedCallback: Consumer<VideoRecordEvent>
-  override fun setOnVideoSavedCallback(callback: Consumer<VideoRecordEvent>) {
-    this.videoSavedCallback = callback
+  override fun setOnVideoRecordEventListener(listener: Consumer<VideoRecordEvent>) {
+    this.videoSavedCallback = listener
   }
 
   override fun setOnPreviewStreamStateCallback(lifecycleOwner: LifecycleOwner, onStreamStateChanged: (PreviewView.StreamState) -> Unit) {

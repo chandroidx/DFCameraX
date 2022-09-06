@@ -2,15 +2,18 @@ package ai.deepfine.dfcamerax.demo
 
 import ai.deepfine.dfcamerax.demo.databinding.ActivityMainBinding
 import ai.deepfine.dfcamerax.utils.CameraTimer
-import ai.deepfine.dfcamerax.config.DFCameraXHandler
+import ai.deepfine.dfcamerax.config.DFCameraXCompat
+import ai.deepfine.dfcamerax.usecases.DFCameraXManager
 import ai.deepfine.dfcamerax.utils.CameraMode
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.util.Size
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
+import androidx.camera.video.Quality
 import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.camera.view.PreviewView.StreamState.*
@@ -19,62 +22,66 @@ import androidx.databinding.DataBindingUtil
 
 class MainActivity : AppCompatActivity() {
   private lateinit var binding: ActivityMainBinding
-  private lateinit var cameraHandler: DFCameraXHandler
+  private lateinit var cameraManager: DFCameraXManager
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
     binding.view = this
-
-    cameraHandler = DFCameraXHandler.Builder(this, this)
+    cameraManager = DFCameraXCompat.Builder(this, this)
+      // Camera Config
       .setCameraMode(CameraMode.Image)
+      // Preview Config
       .setPreviewView(binding.previewView)
       .setPreviewTargetResolution(Size(360, 640))
-//      .setImageOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString())
-//      .setVideoOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_MOVIES).toString())
-      .setOnImageSavedCallback(onImageSavedCallback)
-      .setOnVideoSavedCallback(onVideoSavedCallback)
       .setOnPreviewStreamCallback(this, onStreamStateChanged)
+      // Image Config
+      .setImageCaptureTargetResolution(Size(1080, 1920))
+      .setImageOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString())
+      .setOnImageSavedCallback(onImageSavedCallback)
+      // Video Config
+      .setVideoQuality(Quality.FHD, Quality.HD)
+      .setVideoOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_MOVIES).toString())
+      .setOnVideoEventListener(onVideoEventListener)
       .build()
 
     setTimer()
-    cameraHandler.startCamera()
+    cameraManager.startCamera()
   }
 
 
   private fun setTimer() {
-    cameraHandler.timer = CameraTimer.OFF
-    cameraHandler.setOnTimerCallback { leftSeconds -> Log.d("PYC", "${leftSeconds}초 남았습니다.") }
+    cameraManager.timer = CameraTimer.OFF
+    cameraManager.setOnTimerCallback { leftSeconds -> Log.d(TAG, "$leftSeconds seconds left.") }
   }
 
   fun controlFlash() {
-    when (cameraHandler.flashMode) {
-      ImageCapture.FLASH_MODE_OFF -> cameraHandler.flashMode = ImageCapture.FLASH_MODE_ON
-      ImageCapture.FLASH_MODE_ON -> cameraHandler.flashMode = ImageCapture.FLASH_MODE_OFF
+    when (cameraManager.flashMode) {
+      DFCameraXManager.FLASH_MODE_OFF -> cameraManager.flashMode = DFCameraXManager.FLASH_MODE_ON
+      DFCameraXManager.FLASH_MODE_ON -> cameraManager.flashMode = DFCameraXManager.FLASH_MODE_OFF
     }
   }
 
   fun capture() {
-    cameraHandler.takePicture()
+    cameraManager.takePicture()
   }
 
   fun startRecording() {
-    cameraHandler.recordVideo()
+    cameraManager.recordVideo()
   }
 
   fun stopRecording() {
-    cameraHandler.stopRecording()
-
+    cameraManager.stopRecording()
   }
 
   fun toggle() {
-    when (cameraHandler.lensFacing) {
-      CameraSelector.DEFAULT_BACK_CAMERA -> cameraHandler.lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA
-      CameraSelector.DEFAULT_FRONT_CAMERA -> cameraHandler.lensFacing = CameraSelector.DEFAULT_BACK_CAMERA
+    when (cameraManager.lensFacing) {
+      CameraSelector.DEFAULT_BACK_CAMERA -> cameraManager.lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA
+      CameraSelector.DEFAULT_FRONT_CAMERA -> cameraManager.lensFacing = CameraSelector.DEFAULT_BACK_CAMERA
     }
   }
 
   fun changeToImageMode() {
-    cameraHandler.changeCameraMode(CameraMode.Image)
+    cameraManager.changeCameraMode(CameraMode.Image)
     binding.videoModeButton.visibility = View.VISIBLE
     binding.imageModeButton.visibility = View.GONE
     binding.takePictureButton.visibility = View.VISIBLE
@@ -83,7 +90,7 @@ class MainActivity : AppCompatActivity() {
   }
 
   fun changeToVideoMode() {
-    cameraHandler.changeCameraMode(CameraMode.Video)
+    cameraManager.changeCameraMode(CameraMode.Video)
     binding.videoModeButton.visibility = View.GONE
     binding.imageModeButton.visibility = View.VISIBLE
     binding.takePictureButton.visibility = View.GONE
@@ -94,8 +101,8 @@ class MainActivity : AppCompatActivity() {
   private val onStreamStateChanged: (PreviewView.StreamState) -> Unit by lazy {
     { streamState ->
       when (streamState) {
-        IDLE -> Log.d("PYC", "IDLE")
-        STREAMING -> Log.d("PYC", cameraHandler.getSupportedResolutions().toString())
+        IDLE -> Log.d(TAG, "StreamState : IDLE")
+        STREAMING -> Log.d(TAG, "Supported Resolutions : ${cameraManager.getSupportedResolutions()}")
       }
     }
   }
@@ -112,11 +119,11 @@ class MainActivity : AppCompatActivity() {
     }
   }
 
-  private val onVideoSavedCallback by lazy {
+  private val onVideoEventListener by lazy {
     Consumer<VideoRecordEvent> { event ->
       when (event) {
         is VideoRecordEvent.Start -> {
-          Log.d("PYC", "Start : ${event.recordingStats}")
+          Log.d(TAG, "Start : ${event.recordingStats}")
           binding.videoModeButton.visibility = View.GONE
           binding.imageModeButton.visibility = View.GONE
           binding.takePictureButton.visibility = View.GONE
@@ -124,19 +131,23 @@ class MainActivity : AppCompatActivity() {
           binding.stopRecordingButton.visibility = View.VISIBLE
           binding.toggleButton.visibility = View.GONE
         }
-        is VideoRecordEvent.Resume -> Log.d("PYC", "Resume : ${event.recordingStats}")
-        is VideoRecordEvent.Pause -> Log.d("PYC", "Pause : ${event.recordingStats}")
+        is VideoRecordEvent.Resume -> Log.d(TAG, "Resume : ${event.recordingStats}")
+        is VideoRecordEvent.Pause -> Log.d(TAG, "Pause : ${event.recordingStats}")
         is VideoRecordEvent.Finalize -> {
           binding.videoModeButton.visibility = View.GONE
           binding.imageModeButton.visibility = View.VISIBLE
           binding.startRecordingButton.visibility = View.VISIBLE
           binding.stopRecordingButton.visibility = View.GONE
           binding.toggleButton.visibility = View.VISIBLE
-          Log.d("PYC", "Finalize : ${event.outputResults.outputUri}")
+          Log.d(TAG, "Finalize : ${event.outputResults.outputUri}")
           Toast.makeText(this@MainActivity, event.outputResults.outputUri.toString(), Toast.LENGTH_SHORT).show()
         }
-        is VideoRecordEvent.Status -> Log.d("PYC", "Status : ${event.recordingStats}")
+        is VideoRecordEvent.Status -> Log.d(TAG, "Status : ${event.recordingStats}")
       }
     }
+  }
+
+  companion object {
+    private const val TAG = "DFCameraXDemo"
   }
 }
