@@ -3,6 +3,18 @@
 ### 초기화
 
 ```groovy
+    allprojects {
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
+    }
+    ////////////////////////////////////////////////////////////
+
+    dependencies {
+        implementation 'com.github.yc-park:DFCameraX:1.0.1'
+    }
+}
+
 def camerax_version = "1.1.0-beta01"
 implementation "androidx.camera:camera-core:${camerax_version}"
 implementation "androidx.camera:camera-camera2:${camerax_version}"
