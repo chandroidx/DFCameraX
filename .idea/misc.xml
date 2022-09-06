@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="../../../../../layout/custom_preview.xml" value="0.307518115942029" />
         <entry key="DFCameraX/src/main/res/layout/view_df_preview.xml" value="0.5177083333333333" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.25177304964539005" />
         <entry key="app/src/main/res/layout/content_main.xml" value="0.29010416666666666" />

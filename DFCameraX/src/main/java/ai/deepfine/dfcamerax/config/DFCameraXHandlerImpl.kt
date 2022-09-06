@@ -3,6 +3,7 @@ package ai.deepfine.dfcamerax.config
 import ai.deepfine.dfcamerax.utils.CameraMode
 import ai.deepfine.dfcamerax.utils.CameraTimer
 import android.content.Context
+import android.icu.lang.UCharacter.GraphemeClusterBreak.L
 import android.util.Log
 import android.util.Size
 import android.view.OrientationEventListener
@@ -10,6 +11,7 @@ import android.view.Surface
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.Quality
+import androidx.camera.video.QualitySelector
 import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
@@ -210,6 +212,23 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
   private lateinit var videoSavedCallback: Consumer<VideoRecordEvent>
   override fun setOnVideoSavedCallback(callback: Consumer<VideoRecordEvent>) {
     this.videoSavedCallback = callback
+  }
+
+  override fun setOnPreviewStreamStateCallback(lifecycleOwner: LifecycleOwner, onStreamStateChanged: (PreviewView.StreamState) -> Unit) {
+    previewView.previewStreamState.observe(lifecycleOwner) {
+      onStreamStateChanged(it)
+    }
+  }
+
+  override fun getSupportedResolutions(): Map<Quality, Size> = try {
+    _lensFacing.filter(cameraProvider.availableCameraInfos).firstOrNull()?.let { cameraInfo ->
+      QualitySelector.getSupportedQualities(cameraInfo).associateWith { quality ->
+        QualitySelector.getResolution(cameraInfo, quality)!!
+      }
+    } ?: emptyMap()
+  } catch (e: Exception) {
+    Log.e(TAG, "You must initialize camera before get supported resolutions.")
+    emptyMap()
   }
 
   private fun runTimer(block: () -> Unit) {

@@ -3,18 +3,15 @@ package ai.deepfine.dfcamerax.config
 import ai.deepfine.dfcamerax.utils.CameraMode
 import ai.deepfine.dfcamerax.utils.CameraTimer
 import android.content.Context
-import android.os.Build
 import android.util.Size
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
-import androidx.camera.core.VideoCapture
 import androidx.camera.video.Quality
 import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
 import java.io.File
-import kotlin.math.max
 
 /**
  * @Description
@@ -46,6 +43,7 @@ interface DFCameraXHandler {
 
   fun setOnImageSavedCallback(callback: ImageCapture.OnImageSavedCallback)
   fun setOnVideoSavedCallback(callback: Consumer<VideoRecordEvent>)
+  fun setOnPreviewStreamStateCallback(lifecycleOwner: LifecycleOwner, onStreamStateChanged: (PreviewView.StreamState) -> Unit)
 
   // 전면, 후면 카메라 설정
   var lensFacing: CameraSelector
@@ -59,6 +57,8 @@ interface DFCameraXHandler {
   fun takePicture()
   fun recordVideo()
   fun stopRecording()
+
+  fun getSupportedResolutions(): Map<Quality, Size>
 
   class Builder(lifecycleOwner: LifecycleOwner, context: Context) {
     private val handler: DFCameraXHandler = DFCameraXHandlerImpl(lifecycleOwner, context)
@@ -114,6 +114,11 @@ interface DFCameraXHandler {
 
     fun setVideoQuality(quality: Quality, higherQualityOrLowerThan: Quality? = null): Builder {
       handler.setVideoQuality(quality, higherQualityOrLowerThan)
+      return this
+    }
+
+    fun setOnPreviewStreamCallback(lifecycleOwner: LifecycleOwner, onStreamStateChanged: (PreviewView.StreamState) -> Unit): Builder {
+      handler.setOnPreviewStreamStateCallback(lifecycleOwner, onStreamStateChanged)
       return this
     }
 

@@ -4,19 +4,16 @@ import ai.deepfine.dfcamerax.demo.databinding.ActivityMainBinding
 import ai.deepfine.dfcamerax.utils.CameraTimer
 import ai.deepfine.dfcamerax.config.DFCameraXHandler
 import ai.deepfine.dfcamerax.utils.CameraMode
-import android.annotation.SuppressLint
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import android.util.Size
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.VideoCapture
+import androidx.camera.core.*
 import androidx.camera.video.VideoRecordEvent
+import androidx.camera.view.PreviewView
+import androidx.camera.view.PreviewView.StreamState.*
 import androidx.core.util.Consumer
 import androidx.databinding.DataBindingUtil
 
@@ -36,6 +33,7 @@ class MainActivity : AppCompatActivity() {
 //      .setVideoOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_MOVIES).toString())
       .setOnImageSavedCallback(onImageSavedCallback)
       .setOnVideoSavedCallback(onVideoSavedCallback)
+      .setOnPreviewStreamCallback(this, onStreamStateChanged)
       .build()
 
     setTimer()
@@ -91,6 +89,15 @@ class MainActivity : AppCompatActivity() {
     binding.takePictureButton.visibility = View.GONE
     binding.startRecordingButton.visibility = View.VISIBLE
     binding.stopRecordingButton.visibility = View.GONE
+  }
+
+  private val onStreamStateChanged: (PreviewView.StreamState) -> Unit by lazy {
+    { streamState ->
+      when (streamState) {
+        IDLE -> Log.d("PYC", "IDLE")
+        STREAMING -> Log.d("PYC", cameraHandler.getSupportedResolutions().toString())
+      }
+    }
   }
 
   private val onImageSavedCallback by lazy {
