@@ -16,7 +16,7 @@ afterEvaluate {
             }
 
             debug(MavenPublication) {
-                from components.release
+                from components.debug
                 groupId = 'ai.deepfine.dfcamerax'
                 artifactId = 'DFCameraX'
                 version = '1.0'
