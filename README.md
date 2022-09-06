@@ -16,11 +16,16 @@ implementation "androidx.camera:camera-extensions:${camerax_version}"
 ```kotlin
 cameraHandler = DFCameraXHandler.Builder(this, this)
   .setCameraMode(CameraMode.Image) // 사진, 비디오 모드 설정
-  .setPreviewView(binding.previewView)
-  .setImageOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString()) // 이미지 저장 폴더 설정 (Default : DCIM)
-  .setVideoOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_MOVIES).toString()) // 동영상 저장 폴더 설정 (Default : Movie) 
+  .setPreviewView(binding.previewView) // 프리뷰 설정
+  .setImageOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString()) // 이미지 저장 폴더 설정 (Default: DCIM)
+  .setVideoOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_MOVIES).toString()) // 동영상 저장 폴더 설정 (Default: Movie) 
   .setOnImageSavedCallback(onImageSavedCallback) // 이미지 저장 콜백 
   .setOnVideoSavedCallback(onVideoSavedCallback) // 동영상 저장 콜백
+  .setPreviewTargetResolution(Size(width, height)) // 프리뷰 화질 지정
+  .setImageCaptureTargetResolution(Size(width, height)) // 이미지 캡쳐 화질 지정
+  .setVideoQuality(quality, higherQualityOrLowerThan) // 비디오 화질 지정 
+                                                      // quality: 기본 캡쳐 화질 [Default: FHD] 
+                                                      // higherQualityOrLowerThan : quality가 적용되지 않는 기기일 경우 적용할 quality[Default: HD]
   .build()
 
 cameraHandler.startCamera() // 카메라 실행
