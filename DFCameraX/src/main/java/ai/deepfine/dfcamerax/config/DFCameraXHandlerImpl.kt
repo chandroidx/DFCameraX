@@ -9,6 +9,7 @@ import android.view.OrientationEventListener
 import android.view.Surface
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.video.Quality
 import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
@@ -46,6 +47,8 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
 
   private var _previewTargetResolution: Size? = null
   private var _imageCaptureTargetResolution: Size? = null
+  private var _quality: Quality? = null
+  private var _higherQualityOrLowerThan: Quality? = null
 
   private var imageOutputDirectory: String? = null
   private var videoOutputDirectory: String? = null
@@ -92,7 +95,7 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
         lifecycleOwner,
         lensFacing,
         preview,
-        *cameraMode.createUseCases(previewView, _imageCaptureTargetResolution).toTypedArray()
+        *createUseCases()
       )
 
       preview.setSurfaceProvider(previewView.surfaceProvider)
@@ -100,6 +103,11 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
       Log.e(TAG, "Failed to bind use cases : $e")
     }
   }
+
+  private fun createUseCases(): Array<UseCase> = when (cameraMode) {
+    CameraMode.Image -> (cameraMode as CameraMode.Image).createUseCases(previewView, _imageCaptureTargetResolution)
+    CameraMode.Video -> (cameraMode as CameraMode.Video).createUseCases(_quality, _higherQualityOrLowerThan)
+  }.toTypedArray()
 
 
   private val orientationEventListener = object : OrientationEventListener(context) {
@@ -154,6 +162,10 @@ class DFCameraXHandlerImpl(private val lifecycleOwner: LifecycleOwner, private v
     _imageCaptureTargetResolution = targetResolution
   }
 
+  override fun setVideoQuality(quality: Quality, higherQualityOrLowerThan: Quality?) {
+    _quality = quality
+    _higherQualityOrLowerThan = higherQualityOrLowerThan
+  }
 
   override fun setImageOutputDirectory(path: String) {
     this.imageOutputDirectory = path

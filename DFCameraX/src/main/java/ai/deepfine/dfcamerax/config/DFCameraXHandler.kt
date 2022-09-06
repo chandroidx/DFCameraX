@@ -8,6 +8,7 @@ import android.util.Size
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.VideoCapture
+import androidx.camera.video.Quality
 import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.core.util.Consumer
@@ -35,6 +36,9 @@ interface DFCameraXHandler {
   // 이미지 캡쳐 사이즈 설정
   fun setImageCaptureTargetResolution(targetResolution: Size)
 
+  // 동영상 캡쳐 사이즈 설정
+  // higherQualityOrLowerThan -> quality가 적용되지 않을 경우 대신 적용되는 변수
+  fun setVideoQuality(quality: Quality, higherQualityOrLowerThan: Quality?)
 
   // 파일 저장 경로
   fun setImageOutputDirectory(path: String)
@@ -105,6 +109,11 @@ interface DFCameraXHandler {
 
     fun setImageCaptureTargetResolution(targetResolution: Size): Builder {
       handler.setImageCaptureTargetResolution(targetResolution)
+      return this
+    }
+
+    fun setVideoQuality(quality: Quality, higherQualityOrLowerThan: Quality? = null): Builder {
+      handler.setVideoQuality(quality, higherQualityOrLowerThan)
       return this
     }
 

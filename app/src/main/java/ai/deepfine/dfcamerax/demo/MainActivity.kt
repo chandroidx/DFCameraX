@@ -126,6 +126,7 @@ class MainActivity : AppCompatActivity() {
           binding.stopRecordingButton.visibility = View.GONE
           binding.toggleButton.visibility = View.VISIBLE
           Log.d("PYC", "Finalize : ${event.outputResults.outputUri}")
+          Toast.makeText(this@MainActivity, event.outputResults.outputUri.toString(), Toast.LENGTH_SHORT).show()
         }
         is VideoRecordEvent.Status -> Log.d("PYC", "Status : ${event.recordingStats}")
       }

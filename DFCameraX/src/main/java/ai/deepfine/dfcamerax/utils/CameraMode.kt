@@ -35,7 +35,6 @@ sealed interface CameraMode {
     } ?: setTargetAspectRatio(getAspectRatio(previewView))
   }.build()
 
-  fun createUseCases(previewView: PreviewView, targetResolution: Size?): List<UseCase>
   fun setTargetRotation(rotation: Int)
 
   //================================================================================================
@@ -45,7 +44,7 @@ sealed interface CameraMode {
     lateinit var imageCapture: ImageCapture
     lateinit var imageAnalysis: ImageAnalysis
 
-    override fun createUseCases(previewView: PreviewView, targetResolution: Size?): List<UseCase> {
+    fun createUseCases(previewView: PreviewView, targetResolution: Size?): List<UseCase> {
       return listOf(
         createImageCapture(previewView, targetResolution),
         createImageAnalysis(previewView, targetResolution)
@@ -134,27 +133,27 @@ sealed interface CameraMode {
     lateinit var videoCapture: VideoCapture<Recorder>
     private var recording: Recording? = null
 
-    override fun createUseCases(previewView: PreviewView, targetResolution: Size?): List<UseCase> {
-      return listOf(createVideoCapture())
+    fun createUseCases(quality: Quality?, higherQualityOrLowerThan: Quality?): List<UseCase> {
+      return listOf(createVideoCapture(quality, higherQualityOrLowerThan))
     }
 
     @SuppressLint("RestrictedApi")
-    private fun createVideoCapture(): VideoCapture<Recorder> {
-      videoCapture = VideoCapture.withOutput(createRecorder())
+    private fun createVideoCapture(quality: Quality?, higherQualityOrLowerThan: Quality?): VideoCapture<Recorder> {
+      videoCapture = VideoCapture.withOutput(createRecorder(quality, higherQualityOrLowerThan))
 
       return videoCapture
     }
 
-    private fun createRecorder(): Recorder {
+    private fun createRecorder(quality: Quality?, higherQualityOrLowerThan: Quality?): Recorder {
       return Recorder.Builder()
-        .setQualitySelector(createQualitySelector())
+        .setQualitySelector(createQualitySelector(quality, higherQualityOrLowerThan))
         .build()
     }
 
-    private fun createQualitySelector(): QualitySelector {
+    private fun createQualitySelector(quality: Quality?, higherQualityOrLowerThan: Quality?): QualitySelector {
       return QualitySelector.from(
-        Quality.UHD,
-        FallbackStrategy.higherQualityOrLowerThan(Quality.FHD)
+        quality ?: Quality.FHD,
+        FallbackStrategy.higherQualityOrLowerThan(higherQualityOrLowerThan ?: Quality.HD)
       )
     }
 
