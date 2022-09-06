@@ -1,7 +1,6 @@
-# DFCameraX
+# DFCameraX  [![](https://jitpack.io/v/yc-park/DFCameraX.svg)](https://jitpack.io/#yc-park/DFCameraX)
 
 ### 초기화
-
 ```groovy
     allprojects {
     repositories {
@@ -11,7 +10,7 @@
     ////////////////////////////////////////////////////////////
 
     dependencies {
-        implementation 'com.github.yc-park:DFCameraX:1.0.1'
+        implementation 'com.github.yc-park:DFCameraX:latest-release'
     }
 }
 
