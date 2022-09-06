@@ -26,6 +26,7 @@ cameraHandler = DFCameraXHandler.Builder(this, this)
   .setVideoQuality(quality, higherQualityOrLowerThan) // 비디오 화질 지정 
                                                       // quality: 기본 캡쳐 화질 [Default: FHD] 
                                                       // higherQualityOrLowerThan : quality가 적용되지 않는 기기일 경우 적용할 quality[Default: HD]
+  .setOnPreviewStreamCallback(lifecycleOwner, onStreamStateChanged) // 프리뷰 상태 (STREAMING, IDLE)
   .build()
 
 cameraHandler.startCamera() // 카메라 실행
@@ -36,7 +37,7 @@ cameraHandler.startCamera() // 카메라 실행
 ```kotlin
 cameraHandler.changeCameraMode(CameraMode.Image or CameraMode.Video) // 사진, 비디오 모드 변경
 
-cameraHandler.setTargetResolution(Size) // 화질 변경
+cameraHandler.getSupportedResolutions() // 지원하는 비디오 화질 가져옴 (previewStreamState가 Stream일 경우 호출 가능)
 
 cameraHandler.timer = CameraTimer.OFF // 타이머 설정
 
