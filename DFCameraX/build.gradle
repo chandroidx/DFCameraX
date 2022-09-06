@@ -36,15 +36,8 @@ android {
     }
 
     buildTypes {
-        debug {
-            debuggable true
-            minifyEnabled false
-            zipAlignEnabled false
-        }
         release {
-            debuggable false
-            minifyEnabled true
-            zipAlignEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
