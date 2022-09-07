@@ -174,7 +174,7 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
   override var timer: CameraTimer = _timer
     get() = _timer
     set(value) {
-      _timer = timer
+      _timer = value
       field = value
     }
 
