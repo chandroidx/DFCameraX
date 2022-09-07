@@ -35,17 +35,21 @@ class MainActivity : AppCompatActivity() {
       .setPreviewTargetResolution(Size(360, 640))
       .setOnPreviewStreamCallback(this, onStreamStateChanged)
       // Image Config
-      .setImageCaptureTargetResolution(Size(1080, 1920))
-      .setImageOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString())
+//      .setImageCaptureTargetResolution(Size(1080, 1920))
+//      .setImageOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString())
       .setOnImageSavedCallback(onImageSavedCallback)
       // Video Config
       .setVideoQuality(Quality.FHD, Quality.HD)
-      .setVideoOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_MOVIES).toString())
+//      .setVideoOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_MOVIES).toString())
       .setOnVideoEventListener(onVideoEventListener)
       .build()
 
     setTimer()
     cameraManager.startCamera()
+
+    binding.isImageMode = true
+    binding.isRecording = false
+    binding.flashMode = DFCameraXManager.FLASH_MODE_OFF
   }
 
   override fun onPause() {
@@ -64,10 +68,24 @@ class MainActivity : AppCompatActivity() {
   }
 
   fun controlFlash() {
-    when (cameraManager.flashMode) {
-      DFCameraXManager.FLASH_MODE_OFF -> cameraManager.flashMode = DFCameraXManager.FLASH_MODE_ON
-      DFCameraXManager.FLASH_MODE_ON -> cameraManager.flashMode = DFCameraXManager.FLASH_MODE_OFF
+    val toFlashMode = when (cameraManager.cameraMode) {
+      CameraMode.Image -> {
+        when (cameraManager.flashMode) {
+          DFCameraXManager.FLASH_MODE_OFF -> DFCameraXManager.FLASH_MODE_ON
+          DFCameraXManager.FLASH_MODE_ON -> DFCameraXManager.FLASH_MODE_AUTO
+          DFCameraXManager.FLASH_MODE_AUTO -> DFCameraXManager.FLASH_MODE_OFF
+          else -> throw NotImplementedError()
+        }
+      }
+      CameraMode.Video -> when (cameraManager.flashMode) {
+        DFCameraXManager.FLASH_MODE_OFF -> DFCameraXManager.FLASH_MODE_ON
+        DFCameraXManager.FLASH_MODE_ON -> DFCameraXManager.FLASH_MODE_OFF
+        else -> throw NotImplementedError()
+      }
     }
+
+    cameraManager.flashMode = toFlashMode
+    binding.flashMode = toFlashMode
   }
 
   fun capture() {
@@ -89,22 +107,18 @@ class MainActivity : AppCompatActivity() {
     }
   }
 
-  fun changeToImageMode() {
-    cameraManager.changeCameraMode(CameraMode.Image)
-    binding.videoModeButton.visibility = View.VISIBLE
-    binding.imageModeButton.visibility = View.GONE
-    binding.takePictureButton.visibility = View.VISIBLE
-    binding.startRecordingButton.visibility = View.GONE
-    binding.stopRecordingButton.visibility = View.GONE
-  }
-
-  fun changeToVideoMode() {
-    cameraManager.changeCameraMode(CameraMode.Video)
-    binding.videoModeButton.visibility = View.GONE
-    binding.imageModeButton.visibility = View.VISIBLE
-    binding.takePictureButton.visibility = View.GONE
-    binding.startRecordingButton.visibility = View.VISIBLE
-    binding.stopRecordingButton.visibility = View.GONE
+  fun toggleCameraMode() {
+    when (cameraManager.cameraMode) {
+      CameraMode.Image -> {
+        cameraManager.cameraMode = CameraMode.Video
+        binding.isImageMode = false
+      }
+      CameraMode.Video -> {
+        cameraManager.cameraMode = CameraMode.Image
+        binding.isImageMode = true
+      }
+    }
+    binding.flashMode = DFCameraXManager.FLASH_MODE_OFF
   }
 
   private val onStreamStateChanged: (PreviewView.StreamState) -> Unit by lazy {
@@ -132,23 +146,12 @@ class MainActivity : AppCompatActivity() {
     Consumer<VideoRecordEvent> { event ->
       when (event) {
         is VideoRecordEvent.Start -> {
-          Log.d(TAG, "Start : ${event.recordingStats}")
-          binding.videoModeButton.visibility = View.GONE
-          binding.imageModeButton.visibility = View.GONE
-          binding.takePictureButton.visibility = View.GONE
-          binding.startRecordingButton.visibility = View.GONE
-          binding.stopRecordingButton.visibility = View.VISIBLE
-          binding.toggleButton.visibility = View.GONE
+          binding.isRecording = true
         }
-        is VideoRecordEvent.Resume -> Log.d(TAG, "Resume : ${event.recordingStats}")
-        is VideoRecordEvent.Pause -> Log.d(TAG, "Pause : ${event.recordingStats}")
+        is VideoRecordEvent.Resume -> binding.isRecording = true
+        is VideoRecordEvent.Pause -> binding.isRecording = false
         is VideoRecordEvent.Finalize -> {
-          binding.videoModeButton.visibility = View.GONE
-          binding.imageModeButton.visibility = View.VISIBLE
-          binding.startRecordingButton.visibility = View.VISIBLE
-          binding.stopRecordingButton.visibility = View.GONE
-          binding.toggleButton.visibility = View.VISIBLE
-          Log.d(TAG, "Finalize : ${event.outputResults.outputUri}")
+          binding.isRecording = false
           Toast.makeText(this@MainActivity, event.outputResults.outputUri.toString(), Toast.LENGTH_SHORT).show()
         }
         is VideoRecordEvent.Status -> Log.d(TAG, "Status : ${event.recordingStats}")

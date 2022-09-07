@@ -18,9 +18,12 @@ internal class DFCameraXManagerImpl(private val dfCameraXCompat: DFCameraXCompat
     dfCameraXCompat.startCamera()
   }
 
-  override fun changeCameraMode(mode: CameraMode) {
-    dfCameraXCompat.changeCameraMode(mode)
-  }
+  override var cameraMode: CameraMode = dfCameraXCompat.cameraMode
+    get() = dfCameraXCompat.cameraMode
+    set(value) {
+      dfCameraXCompat.cameraMode = value
+      field = value
+    }
 
   override var lensFacing: CameraSelector = dfCameraXCompat.lensFacing
     get() = dfCameraXCompat.lensFacing

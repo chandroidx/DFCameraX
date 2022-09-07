@@ -1,8 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
 
     <data>
+
+        <import type="android.view.View" />
+
+
+        <import type="ai.deepfine.dfcamerax.usecases.DFCameraXManager" />
+
+        <variable
+            name="isImageMode"
+            type="Boolean" />
+
+        <variable
+            name="isRecording"
+            type="Boolean" />
+
+        <variable
+            name="flashMode"
+            type="Integer" />
 
         <variable
             name="view"
@@ -16,80 +35,122 @@
         <androidx.camera.view.PreviewView
             android:id="@+id/previewView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <Button
-            android:id="@+id/flashButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="@{()->view.controlFlash()}"
-            android:text="FLASH"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <Button
-            android:id="@+id/takePictureButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="@{()->view.capture()}"
-            android:text="사진 촬영"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toTopOf="@id/bottomWrapper"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <Button
-            android:id="@+id/startRecordingButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="@{()->view.startRecording()}"
-            android:text="녹화 시작"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <Button
-            android:id="@+id/stopRecordingButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="@{()->view.stopRecording()}"
-            android:text="녹화 중지"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <Button
-            android:id="@+id/toggleButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="@{()->view.toggle()}"
-            android:text="전환"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/topWrapper" />
 
-        <Button
-            android:id="@+id/imageModeButton"
-            android:layout_width="wrap_content"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/topWrapper"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="10dp"
-            android:onClick="@{()->view.changeToImageMode()}"
-            android:text="사진 모드"
-            android:visibility="gone"
-            app:layout_constraintEnd_toStartOf="@id/videoModeButton"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:background="#80000000"
+            android:paddingVertical="20dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_weight="1">
 
-        <Button
-            android:id="@+id/videoModeButton"
-            android:layout_width="wrap_content"
+            <ImageButton
+                android:id="@+id/flashButton"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginEnd="20dp"
+                android:background="@null"
+                android:onClick="@{()->view.controlFlash()}"
+                android:scaleType="fitXY"
+                android:src="@{flashMode == DFCameraXManager.FLASH_MODE_ON ? @drawable/ico_flash_on : flashMode == DFCameraXManager.FLASH_MODE_OFF ? @drawable/ico_flash_off : @drawable/ico_flash_auto}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/white" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/bottomWrapper"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="@{()->view.changeToVideoMode()}"
-            android:text="비디오 모드"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/imageModeButton"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:background="#80000000"
+            android:paddingVertical="30dp"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageButton
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="40dp"
+                android:background="@null"
+                android:onClick="@{()->view.toggleCameraMode()}"
+                android:src="@{isImageMode ? @drawable/ico_video : @drawable/ico_camera}"
+                android:visibility="@{isRecording ? View.GONE : View.VISIBLE}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/white" />
+
+            <ImageButton
+                android:id="@+id/takePictureButton"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:background="@null"
+                android:onClick="@{()->view.capture()}"
+                android:scaleType="fitXY"
+                android:src="@drawable/ico_take_picture"
+                android:visibility="@{isImageMode ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/white" />
+
+            <ImageButton
+                android:id="@+id/startRecordingButton"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:background="@null"
+                android:onClick="@{()->view.startRecording()}"
+                android:scaleType="fitXY"
+                android:src="@drawable/ico_record"
+                android:visibility="@{!isImageMode &amp;&amp; !isRecording ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/white" />
+
+            <ImageButton
+                android:id="@+id/stopRecordingButton"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:background="@null"
+                android:onClick="@{()->view.stopRecording()}"
+                android:scaleType="fitXY"
+                android:src="@drawable/ico_stop_recording"
+                android:visibility="@{!isImageMode &amp;&amp; isRecording ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/white" />
+
+
+            <ImageButton
+                android:id="@+id/toggleButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="40dp"
+                android:background="@null"
+                android:onClick="@{()->view.toggle()}"
+                android:scaleType="fitXY"
+                android:src="@drawable/ico_switch_camera"
+                android:visibility="@{isRecording ? View.GONE : View.VISIBLE}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/white" />
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -207,12 +207,9 @@ sealed interface CameraMode {
   fun getRotation(previewView: PreviewView) = previewView.display.rotation
 
   fun getAspectRatio(previewView: PreviewView): Int {
-    val metrics = DisplayMetrics().also {
-      previewView.display.getRealMetrics(it)
-    }
 
-    val width = metrics.widthPixels
-    val height = metrics.heightPixels
+    val width = previewView.width
+    val height = previewView.height
 
     val previewRatio = max(width, height).toDouble() / min(width, height)
     if (abs(previewRatio - RATIO_4_3_VALUE) <= abs(previewRatio - RATIO_16_9_VALUE)) {

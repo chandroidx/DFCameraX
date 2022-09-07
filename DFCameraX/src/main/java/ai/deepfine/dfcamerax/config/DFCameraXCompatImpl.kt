@@ -34,7 +34,7 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
     private const val TAG = "DFCameraX"
   }
 
-  private lateinit var cameraMode: CameraMode
+  private var _cameraMode: CameraMode = CameraMode.Image
   private val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
   private lateinit var cameraProvider: ProcessCameraProvider
   private lateinit var preview: Preview
@@ -82,15 +82,18 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
     }
   }
 
-  override fun setCameraMode(cameraMode: CameraMode) {
-    this.cameraMode = cameraMode
-  }
-
-  override fun changeCameraMode(cameraMode: CameraMode) {
-    this.cameraMode = cameraMode
-    flashMode = ImageCapture.FLASH_MODE_OFF
-    startCamera()
-  }
+  override var cameraMode: CameraMode = _cameraMode
+    get() = _cameraMode
+    set(value) {
+      _cameraMode = value
+      startCamera()
+      field = value
+    }
+//  override fun changeCameraMode(cameraMode: CameraMode) {
+//    _cameraMode = cameraMode
+//    flashMode = ImageCapture.FLASH_MODE_OFF
+//    startCamera()
+//  }
 
   private fun bindToLifecycle() {
     try {
@@ -151,9 +154,11 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
     set(value) {
       _flashMode = value
 
-      if (::camera.isInitialized) {
-        camera.cameraControl.enableTorch(value != ImageCapture.FLASH_MODE_OFF)
+      when (cameraMode) {
+        CameraMode.Image -> (cameraMode as CameraMode.Image).imageCapture.flashMode = value
+        CameraMode.Video -> camera.cameraControl.enableTorch(value == ImageCapture.FLASH_MODE_ON)
       }
+
       field = value
     }
 
