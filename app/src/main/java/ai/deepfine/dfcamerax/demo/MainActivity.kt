@@ -23,6 +23,10 @@ import androidx.databinding.DataBindingUtil
 class MainActivity : AppCompatActivity() {
   private lateinit var binding: ActivityMainBinding
   private lateinit var cameraManager: DFCameraXManager
+
+  //================================================================================================
+  // Lifecycle
+  //================================================================================================
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
@@ -44,30 +48,58 @@ class MainActivity : AppCompatActivity() {
       .setOnVideoEventListener(onVideoEventListener)
       .build()
 
-    setTimer()
     cameraManager.startCamera()
 
     binding.isImageMode = true
-    binding.isRecording = false
+    binding.isCapturing = false
     binding.flashMode = DFCameraXManager.FLASH_MODE_OFF
+    binding.timer = CameraTimer.OFF
+    binding.timerCount = 0
   }
 
   override fun onPause() {
     super.onPause()
     cameraManager.cancelTimer()
+    binding.timerCount = 0
+    binding.isCapturing = false
   }
 
+  //================================================================================================
+  // Overrides
+  //================================================================================================
   override fun onBackPressed() {
-    if (cameraManager.isTimerRunning()) cameraManager.cancelTimer()
-    else super.onBackPressed()
+    if (cameraManager.isTimerRunning()) {
+      cameraManager.cancelTimer()
+      binding.timerCount = 0
+      binding.isCapturing = false
+    } else super.onBackPressed()
   }
 
-  private fun setTimer() {
-    cameraManager.timer = CameraTimer.OFF
-    cameraManager.setOnTimerCallback { leftSeconds -> Log.d(TAG, "$leftSeconds seconds left.") }
+
+  //================================================================================================
+  // onClick
+  //================================================================================================
+  fun controlTimer() {
+    cameraManager.setOnTimerCallback { leftSeconds ->
+      binding.timerCount = leftSeconds
+      binding.timerTextView.text = leftSeconds.toString()
+      Log.d(TAG, "$leftSeconds seconds left.")
+    }
+
+    val timer = when (cameraManager.timer) {
+      CameraTimer.OFF -> CameraTimer.S3
+      CameraTimer.S3 -> CameraTimer.S10
+      CameraTimer.S5 -> throw NotImplementedError()
+      CameraTimer.S10 -> CameraTimer.OFF
+    }
+
+    cameraManager.timer = timer
+    binding.timer = timer
   }
 
   fun controlFlash() {
+    if (binding.isCapturing == true) return
+
     val toFlashMode = when (cameraManager.cameraMode) {
       CameraMode.Image -> {
         when (cameraManager.flashMode) {
@@ -88,11 +120,15 @@ class MainActivity : AppCompatActivity() {
     binding.flashMode = toFlashMode
   }
 
-  fun capture() {
+  fun takePicture() {
+    if (binding.isCapturing == true) return
+
+    binding.isCapturing = true
     cameraManager.takePicture()
   }
 
   fun startRecording() {
+    if (binding.isCapturing == true) return
     cameraManager.recordVideo()
   }
 
@@ -100,7 +136,7 @@ class MainActivity : AppCompatActivity() {
     cameraManager.stopRecording()
   }
 
-  fun toggle() {
+  fun switchCamera() {
     when (cameraManager.lensFacing) {
       CameraSelector.DEFAULT_BACK_CAMERA -> cameraManager.lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA
       CameraSelector.DEFAULT_FRONT_CAMERA -> cameraManager.lensFacing = CameraSelector.DEFAULT_BACK_CAMERA
@@ -134,10 +170,12 @@ class MainActivity : AppCompatActivity() {
     object : ImageCapture.OnImageSavedCallback {
       override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
         Toast.makeText(this@MainActivity, outputFileResults.savedUri.toString(), Toast.LENGTH_SHORT).show()
+        binding.isCapturing = false
       }
 
       override fun onError(exception: ImageCaptureException) {
         Toast.makeText(this@MainActivity, exception.toString(), Toast.LENGTH_SHORT).show()
+        binding.isCapturing = false
       }
     }
   }
@@ -146,12 +184,12 @@ class MainActivity : AppCompatActivity() {
     Consumer<VideoRecordEvent> { event ->
       when (event) {
         is VideoRecordEvent.Start -> {
-          binding.isRecording = true
+          binding.isCapturing = true
         }
-        is VideoRecordEvent.Resume -> binding.isRecording = true
-        is VideoRecordEvent.Pause -> binding.isRecording = false
+        is VideoRecordEvent.Resume -> binding.isCapturing = true
+        is VideoRecordEvent.Pause -> binding.isCapturing = false
         is VideoRecordEvent.Finalize -> {
-          binding.isRecording = false
+          binding.isCapturing = false
           Toast.makeText(this@MainActivity, event.outputResults.outputUri.toString(), Toast.LENGTH_SHORT).show()
         }
         is VideoRecordEvent.Status -> Log.d(TAG, "Status : ${event.recordingStats}")

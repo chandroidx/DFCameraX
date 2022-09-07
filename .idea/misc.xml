@@ -5,9 +5,12 @@
       <map>
         <entry key="../../../../../layout/custom_preview.xml" value="0.307518115942029" />
         <entry key="DFCameraX/src/main/res/layout/view_df_preview.xml" value="0.5177083333333333" />
+        <entry key="app/src/main/res/drawable/ic_timer_10_alt_1_fill0_wght400_grad0_opsz48.xml" value="0.291" />
         <entry key="app/src/main/res/drawable/ico_flash_auto.xml" value="0.291" />
         <entry key="app/src/main/res/drawable/ico_record.xml" value="0.291" />
         <entry key="app/src/main/res/drawable/ico_take_picture.xml" value="0.291" />
+        <entry key="app/src/main/res/drawable/ico_timer_3.xml" value="0.291" />
+        <entry key="app/src/main/res/drawable/ico_timer_off.xml" value="0.291" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.25" />
         <entry key="app/src/main/res/layout/content_main.xml" value="0.29010416666666666" />
       </map>

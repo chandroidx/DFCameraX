@@ -8,6 +8,7 @@
 
         <import type="android.view.View" />
 
+        <import type="ai.deepfine.dfcamerax.utils.CameraTimer" />
 
         <import type="ai.deepfine.dfcamerax.usecases.DFCameraXManager" />
 
@@ -16,11 +17,19 @@
             type="Boolean" />
 
         <variable
-            name="isRecording"
+            name="isCapturing"
             type="Boolean" />
 
         <variable
             name="flashMode"
+            type="Integer" />
+
+        <variable
+            name="timer"
+            type="ai.deepfine.dfcamerax.utils.CameraTimer" />
+
+        <variable
+            name="timerCount"
             type="Integer" />
 
         <variable
@@ -51,14 +60,23 @@
             app:layout_constraintVertical_weight="1">
 
             <ImageButton
-                android:id="@+id/flashButton"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:id="@+id/timerButton"
+                style="@style/TopAlignImageButton"
                 android:layout_marginEnd="20dp"
-                android:background="@null"
+                android:onClick="@{()->view.controlTimer()}"
+                android:src="@{timer == CameraTimer.OFF ? @drawable/ico_timer_off : timer == CameraTimer.S3 ? @drawable/ico_timer_3 : @drawable/ico_timer_10, default = @drawable/ico_timer_off}"
+                android:visibility="@{isCapturing || !isImageMode ? View.GONE : View.VISIBLE}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/flashButton"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageButton
+                android:id="@+id/flashButton"
+                style="@style/TopAlignImageButton"
+                android:layout_marginEnd="20dp"
                 android:onClick="@{()->view.controlFlash()}"
-                android:scaleType="fitXY"
-                android:src="@{flashMode == DFCameraXManager.FLASH_MODE_ON ? @drawable/ico_flash_on : flashMode == DFCameraXManager.FLASH_MODE_OFF ? @drawable/ico_flash_off : @drawable/ico_flash_auto}"
+                android:src="@{flashMode == DFCameraXManager.FLASH_MODE_ON ? @drawable/ico_flash_on : flashMode == DFCameraXManager.FLASH_MODE_OFF ? @drawable/ico_flash_off : @drawable/ico_flash_auto, default = @drawable/ico_flash_off}"
+                android:visibility="@{isImageMode &amp;&amp; isCapturing ? View.INVISIBLE : View.VISIBLE}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -76,81 +94,75 @@
             app:layout_constraintBottom_toBottomOf="parent">
 
             <ImageButton
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                style="@style/SideImageButton"
                 android:layout_marginStart="40dp"
-                android:background="@null"
                 android:onClick="@{()->view.toggleCameraMode()}"
-                android:src="@{isImageMode ? @drawable/ico_video : @drawable/ico_camera}"
-                android:visibility="@{isRecording ? View.GONE : View.VISIBLE}"
+                android:src="@{isImageMode ? @drawable/ico_video : @drawable/ico_camera, default = @drawable/ico_video}"
+                android:visibility="@{isCapturing ? View.GONE : View.VISIBLE}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:tint="@color/white" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <ImageButton
                 android:id="@+id/takePictureButton"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:background="@null"
-                android:onClick="@{()->view.capture()}"
-                android:scaleType="fitXY"
+                style="@style/CenterImageButton"
+                android:onClick="@{()->view.takePicture()}"
                 android:src="@drawable/ico_take_picture"
                 android:visibility="@{isImageMode ? View.VISIBLE : View.GONE}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:tint="@color/white" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <ImageButton
                 android:id="@+id/startRecordingButton"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:background="@null"
+                style="@style/CenterImageButton"
                 android:onClick="@{()->view.startRecording()}"
-                android:scaleType="fitXY"
                 android:src="@drawable/ico_record"
-                android:visibility="@{!isImageMode &amp;&amp; !isRecording ? View.VISIBLE : View.GONE}"
+                android:visibility="@{!isImageMode &amp;&amp; !isCapturing ? View.VISIBLE : View.GONE}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:tint="@color/white" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <ImageButton
                 android:id="@+id/stopRecordingButton"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:background="@null"
+                style="@style/CenterImageButton"
                 android:onClick="@{()->view.stopRecording()}"
-                android:scaleType="fitXY"
                 android:src="@drawable/ico_stop_recording"
-                android:visibility="@{!isImageMode &amp;&amp; isRecording ? View.VISIBLE : View.GONE}"
+                android:visibility="@{!isImageMode &amp;&amp; isCapturing ? View.VISIBLE : View.GONE}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:tint="@color/white" />
+                app:layout_constraintTop_toTopOf="parent" />
 
 
             <ImageButton
                 android:id="@+id/toggleButton"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                style="@style/SideImageButton"
                 android:layout_marginEnd="40dp"
-                android:background="@null"
-                android:onClick="@{()->view.toggle()}"
-                android:scaleType="fitXY"
+                android:onClick="@{()->view.switchCamera()}"
                 android:src="@drawable/ico_switch_camera"
-                android:visibility="@{isRecording ? View.GONE : View.VISIBLE}"
+                android:visibility="@{isCapturing ? View.GONE : View.VISIBLE}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:tint="@color/white" />
+                app:layout_constraintTop_toTopOf="parent" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/timerTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="80dp"
+            android:visibility="@{timerCount > 0 ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="5" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
