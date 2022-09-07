@@ -48,6 +48,15 @@ class MainActivity : AppCompatActivity() {
     cameraManager.startCamera()
   }
 
+  override fun onPause() {
+    super.onPause()
+    cameraManager.cancelTimer()
+  }
+
+  override fun onBackPressed() {
+    if (cameraManager.isTimerRunning()) cameraManager.cancelTimer()
+    else super.onBackPressed()
+  }
 
   private fun setTimer() {
     cameraManager.timer = CameraTimer.OFF

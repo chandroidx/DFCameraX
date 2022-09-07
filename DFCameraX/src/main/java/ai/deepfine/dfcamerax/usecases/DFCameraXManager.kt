@@ -25,6 +25,8 @@ interface DFCameraXManager {
   var lensFacing: CameraSelector
   var timer: CameraTimer
   fun setOnTimerCallback(timerCallback: CameraTimer.Callback)
+  fun cancelTimer()
+  fun isTimerRunning(): Boolean
 
   @FlashMode
   var flashMode: Int

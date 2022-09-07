@@ -36,6 +36,8 @@ interface DFCameraXCompat : DFCameraXPreviewCompat, DFCameraXImageCompat, DFCame
   // 타이머 설정
   var timer: CameraTimer
   fun setOnTimerCallback(callback: CameraTimer.Callback)
+  fun cancelTimer()
+  fun isTimerRunning(): Boolean
 
   fun getSupportedResolutions(): Map<Quality, Size>
 

@@ -18,6 +18,7 @@ import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.ExecutionException
@@ -52,6 +53,8 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
 
   private var imageOutputDirectory: String? = null
   private var videoOutputDirectory: String? = null
+
+  private var runningTimer: Job? = null
 
   override fun startCamera() {
     cameraProviderFuture.addListener({
@@ -171,6 +174,10 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
     this.imageOutputDirectory = path
   }
 
+  override fun setVideoOutputDirectory(path: String) {
+    this.videoOutputDirectory = path
+  }
+
   override var timer: CameraTimer = _timer
     get() = _timer
     set(value) {
@@ -178,13 +185,18 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
       field = value
     }
 
-  override fun setVideoOutputDirectory(path: String) {
-    this.videoOutputDirectory = path
-  }
-
   override fun setOnTimerCallback(callback: CameraTimer.Callback) {
     this.timerCallback = callback
   }
+
+  override fun cancelTimer() {
+    if (runningTimer?.isActive == true) {
+      runningTimer?.cancel()
+      runningTimer = null
+    }
+  }
+
+  override fun isTimerRunning(): Boolean = runningTimer?.isActive ?: false
 
   override fun takePicture() {
     runTimer {
@@ -230,7 +242,7 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
   }
 
   private fun runTimer(block: () -> Unit) {
-    lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+    runningTimer = lifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
       when (timer) {
         CameraTimer.OFF -> block()
         else -> {

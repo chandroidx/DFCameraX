@@ -40,6 +40,13 @@ internal class DFCameraXManagerImpl(private val dfCameraXCompat: DFCameraXCompat
     dfCameraXCompat.setOnTimerCallback(timerCallback)
   }
 
+  override fun cancelTimer() {
+    dfCameraXCompat.cancelTimer()
+  }
+
+  override fun isTimerRunning(): Boolean =
+    dfCameraXCompat.isTimerRunning()
+
   override var flashMode: Int = dfCameraXCompat.flashMode
     get() = dfCameraXCompat.flashMode
     set(value) {
