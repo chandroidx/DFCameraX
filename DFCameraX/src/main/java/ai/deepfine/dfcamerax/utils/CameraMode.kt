@@ -16,6 +16,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
 import java.io.File
+import java.io.Serializable
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -27,7 +28,7 @@ import kotlin.math.min
  * @version 1.0.0
  */
 @SuppressLint("RestrictedApi")
-sealed interface CameraMode {
+sealed interface CameraMode : Serializable {
   fun createPreview(previewView: PreviewView, targetResolution: Size?) = Preview.Builder().apply {
     setTargetRotation(getRotation(previewView))
     targetResolution?.let { resolution ->
