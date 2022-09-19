@@ -2,6 +2,7 @@ package ai.deepfine.dfcamerax.config
 
 import ai.deepfine.dfcamerax.utils.CameraMode
 import ai.deepfine.dfcamerax.utils.CameraTimer
+import ai.deepfine.dfcamerax.utils.DFZoomState
 import ai.deepfine.dfcamerax.utils.OnZoomStateChangedListener
 import android.content.Context
 import android.util.Log
@@ -110,7 +111,7 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
 
       _onZoomStateChangedListener?.let { listener ->
         camera.cameraInfo.zoomState.observe(lifecycleOwner) {
-          listener.onZoomStateChanged(it)
+          listener.onZoomStateChanged(DFZoomState.fromZoomState(it))
         }
       }
 
