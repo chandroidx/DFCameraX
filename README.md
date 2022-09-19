@@ -29,6 +29,7 @@ implementation "androidx.camera:camera-extensions:${camerax_version}"
 cameraManager = DFCameraXCompat.Builder(this, this)
   // Camera Config
   .setCameraMode(CameraMode.Image) // 사진, 비디오 모드 설정
+  .setOnZoomStateChangedListener(onZoomStateChangedListener) // 줌 레벨 변경 콜백
   // Preview Config
   .setPreviewView(binding.previewView) // 프리뷰 설정
   .setPreviewTargetResolution(Size(360, 640)) // 프리뷰 화질 지정
@@ -58,6 +59,8 @@ cameraManager.timer = CameraTimer.OFF // 타이머 설정
 cameraManager.setOnTimerCallback(timerCallback : CameraTimer. Callback) // 카메라 타이머 콜백
 cameraManager.flashMode = DFCameraXCompat.FLASH_MODE_ON or DFCameraXCompat.FLASH_MODE_OFF // 플래시 설정
 cameraManager.getSupportedResolutions() // 지원하는 비디오 화질 가져옴 (previewStreamState가 Stream일 경우 호출 가능)
+cameraManager.setZoomRatio(zoomRatio : Float) // 줌 설정 (minZoomRatio ~ maxZoomRatio)
+cameraManager.setLinearZoom(linearZoom : Float) // 줌 설정 (0F ~ 1F)
 
 
 cameraManager.takePicture() // 사진 촬영
