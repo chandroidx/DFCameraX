@@ -2,6 +2,7 @@ package ai.deepfine.dfcamerax.config
 
 import ai.deepfine.dfcamerax.utils.CameraMode
 import ai.deepfine.dfcamerax.utils.CameraTimer
+import ai.deepfine.dfcamerax.utils.OnZoomStateChangedListener
 import android.content.Context
 import android.util.Log
 import android.util.Size
@@ -16,6 +17,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -105,6 +107,13 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
       )
 
       preview.setSurfaceProvider(previewView.surfaceProvider)
+
+      _onZoomStateChangedListener?.let { listener ->
+        camera.cameraInfo.zoomState.observe(lifecycleOwner) {
+          listener.onZoomStateChanged(it)
+        }
+      }
+
     } catch (e: Exception) {
       Log.e(TAG, "Failed to bind use cases : $e")
     }
@@ -161,6 +170,19 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
 
       field = value
     }
+
+  override fun setZoomRatio(zoomRatio: Float) {
+    camera.cameraControl.setZoomRatio(zoomRatio)
+  }
+
+  override fun setLinearZoom(linearZoom: Float) {
+    camera.cameraControl.setLinearZoom(linearZoom)
+  }
+
+  private var _onZoomStateChangedListener: OnZoomStateChangedListener? = null
+  override fun setOnZoomStateChangedListener(onZoomStateChangedListener: OnZoomStateChangedListener) {
+    _onZoomStateChangedListener = onZoomStateChangedListener
+  }
 
   override fun setPreviewTargetResolution(targetResolution: Size) {
     _previewTargetResolution = targetResolution

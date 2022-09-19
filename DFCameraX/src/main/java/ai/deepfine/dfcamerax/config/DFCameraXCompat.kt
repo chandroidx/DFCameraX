@@ -4,15 +4,18 @@ import ai.deepfine.dfcamerax.usecases.DFCameraXManager
 import ai.deepfine.dfcamerax.usecases.DFCameraXManagerImpl
 import ai.deepfine.dfcamerax.utils.CameraMode
 import ai.deepfine.dfcamerax.utils.CameraTimer
+import ai.deepfine.dfcamerax.utils.OnZoomStateChangedListener
 import android.content.Context
 import android.util.Size
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
+import androidx.camera.core.ZoomState
 import androidx.camera.video.Quality
 import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
 import java.io.File
 
 /**
@@ -38,6 +41,11 @@ interface DFCameraXCompat : DFCameraXPreviewCompat, DFCameraXImageCompat, DFCame
   fun cancelTimer()
   fun isTimerRunning(): Boolean
 
+  // 줌 설정
+  fun setZoomRatio(zoomRatio: Float)
+  fun setLinearZoom(linearZoom: Float)
+  fun setOnZoomStateChangedListener(onZoomStateChangedListener: OnZoomStateChangedListener)
+
   fun getSupportedResolutions(): Map<Quality, Size>
 
   //================================================================================================
@@ -48,6 +56,11 @@ interface DFCameraXCompat : DFCameraXPreviewCompat, DFCameraXImageCompat, DFCame
 
     fun setCameraMode(cameraMode: CameraMode): Builder {
       compat.cameraMode = cameraMode
+      return this
+    }
+
+    fun setOnZoomStateChangedListener(onZoomStateChangedListener: OnZoomStateChangedListener): Builder {
+      compat.setOnZoomStateChangedListener(onZoomStateChangedListener)
       return this
     }
 

@@ -5,6 +5,7 @@ import ai.deepfine.dfcamerax.utils.CameraTimer
 import ai.deepfine.dfcamerax.config.DFCameraXCompat
 import ai.deepfine.dfcamerax.usecases.DFCameraXManager
 import ai.deepfine.dfcamerax.utils.CameraMode
+import ai.deepfine.dfcamerax.utils.OnZoomStateChangedListener
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     cameraManager = DFCameraXCompat.Builder(this, this)
       // Camera Config
       .setCameraMode(CameraMode.Image)
+      .setOnZoomStateChangedListener(onZoomStateChangedListener)
       // Preview Config
       .setPreviewView(binding.previewView)
       .setPreviewTargetResolution(Size(360, 640))
@@ -72,7 +74,9 @@ class MainActivity : AppCompatActivity() {
       cameraManager.cancelTimer()
       binding.timerCount = 0
       binding.isCapturing = false
-    } else super.onBackPressed()
+    } else {
+      super.onBackPressed()
+    }
   }
 
 
@@ -164,6 +168,10 @@ class MainActivity : AppCompatActivity() {
         STREAMING -> Log.d(TAG, "Supported Resolutions : ${cameraManager.getSupportedResolutions()}")
       }
     }
+  }
+
+  private val onZoomStateChangedListener = OnZoomStateChangedListener { state ->
+    Log.d(TAG, "zoomState : $state")
   }
 
   private val onImageSavedCallback by lazy {

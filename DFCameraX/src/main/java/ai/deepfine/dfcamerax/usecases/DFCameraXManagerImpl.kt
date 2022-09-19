@@ -3,9 +3,12 @@ package ai.deepfine.dfcamerax.usecases
 import ai.deepfine.dfcamerax.config.DFCameraXCompat
 import ai.deepfine.dfcamerax.utils.CameraMode
 import ai.deepfine.dfcamerax.utils.CameraTimer
+import ai.deepfine.dfcamerax.utils.OnZoomStateChangedListener
 import android.util.Size
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ZoomState
 import androidx.camera.video.Quality
+import androidx.lifecycle.LiveData
 
 /**
  * @Description
@@ -60,6 +63,13 @@ internal class DFCameraXManagerImpl(private val dfCameraXCompat: DFCameraXCompat
 
   override fun getSupportedResolutions(): Map<Quality, Size> = dfCameraXCompat.getSupportedResolutions()
 
+  override fun setZoomRatio(zoomRatio: Float) {
+    dfCameraXCompat.setZoomRatio(zoomRatio)
+  }
+
+  override fun setLinearZoom(linearZoom: Float) {
+    dfCameraXCompat.setLinearZoom(linearZoom)
+  }
 
   override fun takePicture() {
     dfCameraXCompat.takePicture()

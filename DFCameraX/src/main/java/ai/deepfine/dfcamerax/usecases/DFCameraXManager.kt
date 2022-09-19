@@ -2,10 +2,13 @@ package ai.deepfine.dfcamerax.usecases
 
 import ai.deepfine.dfcamerax.utils.CameraMode
 import ai.deepfine.dfcamerax.utils.CameraTimer
+import ai.deepfine.dfcamerax.utils.OnZoomStateChangedListener
 import android.util.Size
 import androidx.annotation.IntDef
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ZoomState
 import androidx.camera.video.Quality
+import androidx.lifecycle.LiveData
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 
@@ -20,7 +23,7 @@ interface DFCameraXManager {
   // Camera
   //================================================================================================
   fun startCamera()
-  var cameraMode : CameraMode
+  var cameraMode: CameraMode
 
   var lensFacing: CameraSelector
   var timer: CameraTimer
@@ -30,6 +33,9 @@ interface DFCameraXManager {
 
   @FlashMode
   var flashMode: Int
+
+  fun setZoomRatio(zoomRatio: Float)
+  fun setLinearZoom(linearZoom: Float)
 
   fun getSupportedResolutions(): Map<Quality, Size>
 
