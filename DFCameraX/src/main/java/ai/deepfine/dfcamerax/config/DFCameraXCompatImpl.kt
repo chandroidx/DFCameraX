@@ -120,8 +120,8 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
   }
 
   private fun createUseCases(): Array<UseCase> = when (cameraMode) {
-    CameraMode.Image -> (cameraMode as CameraMode.Image).createUseCases(previewView, _imageCaptureTargetResolution)
-    CameraMode.Video -> (cameraMode as CameraMode.Video).createUseCases(_quality, _higherQualityOrLowerThan)
+    is CameraMode.Image -> (cameraMode as CameraMode.Image).createUseCases(previewView, _imageCaptureTargetResolution)
+    is CameraMode.Video -> (cameraMode as CameraMode.Video).createUseCases(_quality, _higherQualityOrLowerThan)
   }.toTypedArray()
 
 
@@ -164,8 +164,8 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
       _flashMode = value
 
       when (cameraMode) {
-        CameraMode.Image -> (cameraMode as CameraMode.Image).imageCapture.flashMode = value
-        CameraMode.Video -> camera.cameraControl.enableTorch(value == ImageCapture.FLASH_MODE_ON)
+        is CameraMode.Image -> (cameraMode as CameraMode.Image).imageCapture.flashMode = value
+        is CameraMode.Video -> camera.cameraControl.enableTorch(value == ImageCapture.FLASH_MODE_ON)
       }
 
       field = value
