@@ -1,6 +1,5 @@
 package ai.deepfine.dfcamerax.config
 
-import android.net.Uri
 import androidx.camera.video.Quality
 import androidx.camera.video.VideoRecordEvent
 import androidx.core.util.Consumer
@@ -17,7 +16,7 @@ interface DFCameraXVideoCompat {
   fun setVideoQuality(quality: Quality, higherQualityOrLowerThan: Quality?)
 
   // 파일 저장 경로
-  fun setVideoOutputUri(uri: Uri)
+  fun setVideoOutputDirectory(path: String)
 
   // 비디오 촬영 콜백 (start, pause, resume, etc...)
   fun setOnVideoRecordEventListener(listener: Consumer<VideoRecordEvent>)

@@ -3,11 +3,9 @@ package ai.deepfine.dfcamerax.utils
 import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
-import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
-import android.provider.OpenableColumns
 import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Size
@@ -18,10 +16,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
 import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
 import java.io.Serializable
-import kotlin.jvm.Throws
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -169,14 +164,14 @@ sealed interface CameraMode : Serializable {
     }
 
     @SuppressLint("MissingPermission")
-    fun recordVideo(context: Context, uri: Uri?, callback: Consumer<VideoRecordEvent>) {
-      recording = when (uri == null) {
+    fun recordVideo(context: Context, outputDirectory: String?, callback: Consumer<VideoRecordEvent>) {
+      recording = when (outputDirectory == null) {
         true -> {
           videoCapture.output
             .prepareRecording(context, optionsVideoOnGallery(context))
         }
         false -> videoCapture.output
-          .prepareRecording(context, optionsVideoOnSpecificDirectory(context, uri))
+          .prepareRecording(context, optionsVideoOnSpecificDirectory(outputDirectory))
       }.withAudioEnabled()
         .start(ContextCompat.getMainExecutor(context), callback)
     }
@@ -201,40 +196,10 @@ sealed interface CameraMode : Serializable {
       }.build()
     }
 
-    private fun optionsVideoOnSpecificDirectory(context: Context, uri: Uri): FileOutputOptions {
-      val file = uri.toFile(context)
+    private fun optionsVideoOnSpecificDirectory(directory: String): FileOutputOptions {
+      val file = File(directory, "${System.currentTimeMillis()}.mp4")
       return FileOutputOptions.Builder(file).build()
     }
-  }
-
-  fun Uri.toFile(context: Context): File {
-    val destination = File(context.filesDir.path + File.separatorChar + queryName(context, this))
-
-    val inputStream = context.contentResolver.openInputStream(this)
-    createFileFromStream(inputStream!!, destination)
-
-    destination.deleteOnExit()
-    return destination
-  }
-
-  private fun createFileFromStream(inputStream: InputStream, destination: File) {
-    val outputStream = FileOutputStream(destination)
-    val buffer = ByteArray(4096)
-    var length: Int
-    while (inputStream.read(buffer).also { length = it } > 0) {
-      outputStream.write(buffer, 0, length)
-    }
-    outputStream.flush()
-  }
-
-  private fun queryName(context: Context, uri: Uri): String {
-    val cursor = context.contentResolver.query(uri, null, null, null, null)
-
-    val nameIndex = cursor?.getColumnIndex(OpenableColumns.DISPLAY_NAME)!!
-    cursor.moveToFirst()
-    val name = cursor.getString(nameIndex)
-    cursor.close()
-    return name
   }
 
   //================================================================================================

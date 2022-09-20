@@ -4,7 +4,6 @@ import ai.deepfine.dfcamerax.utils.CameraMode
 import ai.deepfine.dfcamerax.utils.CameraTimer
 import ai.deepfine.dfcamerax.utils.OnZoomStateChangedListener
 import android.content.Context
-import android.net.Uri
 import android.util.Log
 import android.util.Size
 import android.view.OrientationEventListener
@@ -18,6 +17,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -54,7 +54,7 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
   private var _higherQualityOrLowerThan: Quality? = null
 
   private var imageOutputDirectory: String? = null
-  private var videoOutputUri: Uri? = null
+  private var videoOutputDirectory: String? = null
 
   private var runningTimer: Job? = null
 
@@ -201,8 +201,8 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
     this.imageOutputDirectory = path
   }
 
-  override fun setVideoOutputUri(uri: Uri) {
-    this.videoOutputUri = uri
+  override fun setVideoOutputDirectory(path: String) {
+    this.videoOutputDirectory = path
   }
 
   override var timer: CameraTimer = _timer
@@ -238,7 +238,7 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
 
   override fun recordVideo() {
     runTimer {
-      (cameraMode as? CameraMode.Video)?.recordVideo(context, videoOutputUri, videoSavedCallback)
+      (cameraMode as? CameraMode.Video)?.recordVideo(context, videoOutputDirectory, videoSavedCallback)
     }
   }
 

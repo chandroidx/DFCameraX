@@ -6,15 +6,17 @@ import ai.deepfine.dfcamerax.utils.CameraMode
 import ai.deepfine.dfcamerax.utils.CameraTimer
 import ai.deepfine.dfcamerax.utils.OnZoomStateChangedListener
 import android.content.Context
-import android.net.Uri
 import android.util.Size
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
+import androidx.camera.core.ZoomState
 import androidx.camera.video.Quality
 import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import java.io.File
 
 /**
  * @Description
@@ -82,8 +84,12 @@ interface DFCameraXCompat : DFCameraXPreviewCompat, DFCameraXImageCompat, DFCame
       return this
     }
 
-    fun setVideoOutputUri(uri: Uri): Builder {
-      compat.setVideoOutputUri(uri)
+    fun setVideoOutputDirectory(outputDirectory: String): Builder {
+      with(File(outputDirectory)) {
+        if (!exists())
+          mkdir()
+      }
+      compat.setVideoOutputDirectory(outputDirectory)
       return this
     }
 
