@@ -36,7 +36,7 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
     private const val TAG = "DFCameraX"
   }
 
-  private var _cameraMode: CameraMode = CameraMode.Image
+  private var _cameraMode: CameraMode = CameraMode.Image()
   private val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
   private lateinit var cameraProvider: ProcessCameraProvider
   private lateinit var preview: Preview

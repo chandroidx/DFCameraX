@@ -41,7 +41,7 @@ sealed interface CameraMode : Serializable {
   //================================================================================================
   // Image
   //================================================================================================
-  object Image : CameraMode {
+  class Image : CameraMode {
     lateinit var imageCapture: ImageCapture
     lateinit var imageAnalysis: ImageAnalysis
 
@@ -130,7 +130,7 @@ sealed interface CameraMode : Serializable {
   //================================================================================================
   // Video
   //================================================================================================
-  object Video : CameraMode {
+  class Video : CameraMode {
     lateinit var videoCapture: VideoCapture<Recorder>
     private var recording: Recording? = null
 
