@@ -42,7 +42,7 @@ cameraManager = DFCameraXCompat.Builder(this, this)
   .setVideoQuality(Quality.FHD, Quality.HD) // 비디오 화질 지정 
                                             // quality: 기본 캡쳐 화질 [Default: FHD] 
                                             // higherQualityOrLowerThan : quality가 적용되지 않는 기기일 경우 적용할 quality[Default: HD]
-  .setVideoOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_MOVIES).toString()) // 동영상 저장 폴더 설정 (Default: Movie) 
+  .setVideoOutputUri(URI) // 동영상 저장 폴더 설정 (Default: Movie) 
   .setOnVideoEventListener(onVideoEventListener) // 동영상 이벤트
   .build()
 

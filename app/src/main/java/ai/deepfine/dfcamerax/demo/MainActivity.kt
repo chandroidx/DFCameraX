@@ -7,10 +7,8 @@ import ai.deepfine.dfcamerax.usecases.DFCameraXManager
 import ai.deepfine.dfcamerax.utils.CameraMode
 import ai.deepfine.dfcamerax.utils.OnZoomStateChangedListener
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import android.util.Size
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -18,8 +16,10 @@ import androidx.camera.video.Quality
 import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.camera.view.PreviewView.StreamState.*
+import androidx.core.content.FileProvider
 import androidx.core.util.Consumer
 import androidx.databinding.DataBindingUtil
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
   private lateinit var binding: ActivityMainBinding
@@ -32,6 +32,11 @@ class MainActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
     binding.view = this
+
+    val videoFile = File(getExternalFilesDir("test"), "${System.currentTimeMillis()}.png")
+    getExternalFilesDir("test")?.mkdirs()
+    videoFile.createNewFile()
+
     cameraManager = DFCameraXCompat.Builder(this, this)
       // Camera Config
       .setCameraMode(CameraMode.Image())
@@ -46,7 +51,7 @@ class MainActivity : AppCompatActivity() {
       .setOnImageSavedCallback(onImageSavedCallback)
       // Video Config
       .setVideoQuality(Quality.FHD, Quality.HD)
-//      .setVideoOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_MOVIES).toString())
+      .setVideoOutputUri(FileProvider.getUriForFile(this, "${packageName}.fileprovider", videoFile))
       .setOnVideoEventListener(onVideoEventListener)
       .build()
 
