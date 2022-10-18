@@ -3,6 +3,8 @@
 ### 초기화
 
 ```groovy
+    compileSdkVersion 33
+
     allprojects {
     repositories {
         ...
@@ -15,7 +17,7 @@
     }
 }
 
-def camerax_version = "1.1.0-beta01"
+def camerax_version = "1.2.0-beta02"
 implementation "androidx.camera:camera-core:${camerax_version}"
 implementation "androidx.camera:camera-camera2:${camerax_version}"
 implementation "androidx.camera:camera-lifecycle:${camerax_version}"
