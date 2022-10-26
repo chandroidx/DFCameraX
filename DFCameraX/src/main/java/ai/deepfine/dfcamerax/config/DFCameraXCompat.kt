@@ -26,6 +26,7 @@ import java.io.File
  */
 interface DFCameraXCompat : DFCameraXPreviewCompat, DFCameraXImageCompat, DFCameraXVideoCompat {
   fun startCamera()
+  fun stopCamera()
   var cameraMode: Int
   fun enableAutoRotation(enabled: Boolean)
 

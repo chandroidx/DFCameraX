@@ -23,6 +23,7 @@ interface DFCameraXManager {
   // Camera
   //================================================================================================
   fun startCamera()
+  fun stopCamera()
   var cameraMode: Int
 
   var lensFacing: CameraSelector

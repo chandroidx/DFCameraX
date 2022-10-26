@@ -71,6 +71,10 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
     }, ContextCompat.getMainExecutor(context))
   }
 
+  override fun stopCamera() {
+    cameraProvider.unbindAll()
+  }
+
   private fun fetchCameraProvider(onErrorCaught: () -> Unit) {
     try {
       cameraProvider = cameraProviderFuture.get()
