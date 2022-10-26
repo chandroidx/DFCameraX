@@ -1,8 +1,7 @@
 package ai.deepfine.dfcamerax.config
 
-import ai.deepfine.dfcamerax.utils.CameraMode
-import ai.deepfine.dfcamerax.utils.CameraTimer
-import ai.deepfine.dfcamerax.utils.OnZoomStateChangedListener
+import ai.deepfine.dfcamerax.utils.*
+import ai.deepfine.dfcamerax.utils.Image
 import android.content.Context
 import android.util.Log
 import android.util.Size
@@ -36,7 +35,7 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
     private const val TAG = "DFCameraX"
   }
 
-  private var _cameraMode: CameraMode = CameraMode.Image()
+  private var _cameraMode: CameraMode = Image()
   private val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
   private lateinit var cameraProvider: ProcessCameraProvider
   private lateinit var preview: Preview
@@ -64,7 +63,7 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
         return@fetchCameraProvider
       }
 
-      preview = cameraMode.createPreview(previewView, _previewTargetResolution)
+      preview = _cameraMode.createPreview(previewView, _previewTargetResolution)
 
       cameraProvider.unbindAll()
 
@@ -84,10 +83,14 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
     }
   }
 
-  override var cameraMode: CameraMode = _cameraMode
-    get() = _cameraMode
+  override var cameraMode: Int = _cameraMode.id
+    get() = _cameraMode.id
     set(value) {
-      _cameraMode = value
+      _cameraMode = when (value) {
+        CameraMode.MODE_IMAGE -> Image()
+        CameraMode.MODE_VIDEO -> Video()
+        else -> throw NotImplementedError("Not supported camera mode")
+      }
       startCamera()
       field = value
     }
@@ -119,9 +122,9 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
     }
   }
 
-  private fun createUseCases(): Array<UseCase> = when (cameraMode) {
-    is CameraMode.Image -> (cameraMode as CameraMode.Image).createUseCases(previewView, _imageCaptureTargetResolution)
-    is CameraMode.Video -> (cameraMode as CameraMode.Video).createUseCases(_quality, _higherQualityOrLowerThan)
+  private fun createUseCases(): Array<UseCase> = when (_cameraMode) {
+    is Image -> (_cameraMode as Image).createUseCases(previewView, _imageCaptureTargetResolution)
+    is Video -> (_cameraMode as Video).createUseCases(_quality, _higherQualityOrLowerThan)
   }.toTypedArray()
 
 
@@ -134,7 +137,7 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
         else -> Surface.ROTATION_0
       }
 
-      cameraMode.setTargetRotation(rotation)
+      _cameraMode.setTargetRotation(rotation)
     }
   }
 
@@ -163,9 +166,9 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
     set(value) {
       _flashMode = value
 
-      when (cameraMode) {
-        is CameraMode.Image -> (cameraMode as CameraMode.Image).imageCapture.flashMode = value
-        is CameraMode.Video -> camera.cameraControl.enableTorch(value == ImageCapture.FLASH_MODE_ON)
+      when (_cameraMode) {
+        is Image -> (_cameraMode as Image).imageCapture.flashMode = value
+        is Video -> camera.cameraControl.enableTorch(value == ImageCapture.FLASH_MODE_ON)
       }
 
       field = value
@@ -227,7 +230,7 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
 
   override fun takePicture() {
     runTimer {
-      (cameraMode as? CameraMode.Image)?.takePicture(context, imageOutputDirectory, imageSavedCallback)
+      (_cameraMode as? Image)?.takePicture(context, imageOutputDirectory, imageSavedCallback)
     }
   }
 
@@ -238,12 +241,12 @@ internal class DFCameraXCompatImpl(private val lifecycleOwner: LifecycleOwner, p
 
   override fun recordVideo() {
     runTimer {
-      (cameraMode as? CameraMode.Video)?.recordVideo(context, videoOutputDirectory, videoSavedCallback)
+      (_cameraMode as? Video)?.recordVideo(context, videoOutputDirectory, videoSavedCallback)
     }
   }
 
   override fun stopRecording() {
-    (cameraMode as? CameraMode.Video)?.stopRecording()
+    (_cameraMode as? Video)?.stopRecording()
   }
 
   private lateinit var videoSavedCallback: Consumer<VideoRecordEvent>

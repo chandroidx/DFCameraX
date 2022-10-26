@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     binding.view = this
     cameraManager = DFCameraXCompat.Builder(this, this)
       // Camera Config
-      .setCameraMode(CameraMode.Image())
+      .setCameraMode(CameraMode.MODE_IMAGE)
       .setOnZoomStateChangedListener(onZoomStateChangedListener)
       // Preview Config
       .setPreviewView(binding.previewView)
@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
     if (binding.isCapturing == true) return
 
     val toFlashMode = when (cameraManager.cameraMode) {
-      is CameraMode.Image -> {
+      CameraMode.MODE_IMAGE -> {
         when (cameraManager.flashMode) {
           DFCameraXManager.FLASH_MODE_OFF -> DFCameraXManager.FLASH_MODE_ON
           DFCameraXManager.FLASH_MODE_ON -> DFCameraXManager.FLASH_MODE_AUTO
@@ -113,11 +113,13 @@ class MainActivity : AppCompatActivity() {
           else -> throw NotImplementedError()
         }
       }
-      is CameraMode.Video -> when (cameraManager.flashMode) {
+      CameraMode.MODE_VIDEO -> when (cameraManager.flashMode) {
         DFCameraXManager.FLASH_MODE_OFF -> DFCameraXManager.FLASH_MODE_ON
         DFCameraXManager.FLASH_MODE_ON -> DFCameraXManager.FLASH_MODE_OFF
         else -> throw NotImplementedError()
       }
+
+      else -> throw NotImplementedError()
     }
 
     cameraManager.flashMode = toFlashMode
@@ -149,12 +151,12 @@ class MainActivity : AppCompatActivity() {
 
   fun toggleCameraMode() {
     when (cameraManager.cameraMode) {
-      is CameraMode.Image -> {
-        cameraManager.cameraMode = CameraMode.Video()
+      CameraMode.MODE_IMAGE -> {
+        cameraManager.cameraMode = CameraMode.MODE_VIDEO
         binding.isImageMode = false
       }
-      is CameraMode.Video -> {
-        cameraManager.cameraMode = CameraMode.Image()
+      CameraMode.MODE_VIDEO -> {
+        cameraManager.cameraMode = CameraMode.MODE_IMAGE
         binding.isImageMode = true
       }
     }

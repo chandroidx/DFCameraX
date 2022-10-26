@@ -26,7 +26,7 @@ import java.io.File
  */
 interface DFCameraXCompat : DFCameraXPreviewCompat, DFCameraXImageCompat, DFCameraXVideoCompat {
   fun startCamera()
-  var cameraMode: CameraMode
+  var cameraMode: Int
   fun enableAutoRotation(enabled: Boolean)
 
   // 전면, 후면 카메라 설정
@@ -54,7 +54,7 @@ interface DFCameraXCompat : DFCameraXPreviewCompat, DFCameraXImageCompat, DFCame
   class Builder(lifecycleOwner: LifecycleOwner, context: Context) {
     private val compat: DFCameraXCompat = DFCameraXCompatImpl(lifecycleOwner, context)
 
-    fun setCameraMode(cameraMode: CameraMode): Builder {
+    fun setCameraMode(cameraMode: Int): Builder {
       compat.cameraMode = cameraMode
       return this
     }
