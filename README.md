@@ -1,6 +1,6 @@
 # DFCameraX  [![](https://jitpack.io/v/yc-park/DFCameraX.svg)](https://jitpack.io/#yc-park/DFCameraX)
 
-### 초기화
+### Initialize
 
 ```groovy
     compileSdkVersion 33
@@ -27,45 +27,47 @@ implementation "androidx.camera:camera-view:${camerax_version}"
 implementation "androidx.camera:camera-extensions:${camerax_version}"
 ```
 
+### Configuration
+
 ```kotlin
 cameraManager = DFCameraXCompat.Builder(this, this)
   // Camera Config
-  .setCameraMode(CameraMode.Image) // 사진, 비디오 모드 설정
-  .setOnZoomStateChangedListener(onZoomStateChangedListener) // 줌 레벨 변경 콜백
+  .setCameraMode(CameraMode.Image) // Select the mode for capture "Image" / "Camera"
+  .setOnZoomStateChangedListener(onZoomStateChangedListener) // Listener for zoom state
   // Preview Config
-  .setPreviewView(binding.previewView) // 프리뷰 설정
-  .setPreviewTargetResolution(Size(360, 640)) // 프리뷰 화질 지정
+  .setPreviewView(binding.previewView) // Set preview
+  .setPreviewTargetResolution(Size(360, 640)) // Set preview's resolution
   .setOnPreviewStreamCallback(this, onStreamStateChanged)
   // Image Config
-  .setImageCaptureTargetResolution(Size(1080, 1920)) // 이미지 캡쳐 화질 지정
-  .setImageOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString()) // 이미지 저장 폴더 설정 (Default: DCIM)
-  .setOnImageSavedCallback(onImageSavedCallback) // 이미지 저장 콜백 
+  .setImageCaptureTargetResolution(Size(1080, 1920)) // Set resolution for image capture
+  .setImageOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString()) // Set output directory for image capture (Default: DCIM)
+  .setOnImageSavedCallback(onImageSavedCallback) // Set image save callback 
   // Video Config
-  .setVideoQuality(Quality.FHD, Quality.HD) // 비디오 화질 지정 
-                                            // quality: 기본 캡쳐 화질 [Default: FHD] 
-                                            // higherQualityOrLowerThan : quality가 적용되지 않는 기기일 경우 적용할 quality[Default: HD]
-  .setVideoOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_MOVIES).toString()) // 동영상 저장 폴더 설정 (Default: Movie) 
-  .setOnVideoEventListener(onVideoEventListener) // 동영상 이벤트
+  .setVideoQuality(Quality.FHD, Quality.HD) // Set resolution for image capture 
+                                            // quality: target resolution [Default: FHD] 
+                                            // higherQualityOrLowerThan : [Default: HD]
+  .setVideoOutputDirectory(getExternalFilesDir(Environment.DIRECTORY_MOVIES).toString()) // Set ouput directory for video capture (Default: Movie) 
+  .setOnVideoEventListener(onVideoEventListener) // Set video event callback
   .build()
 
 
-cameraManager.startCamera() // 카메라 실행
+cameraManager.startCamera() // start camera
 ```
 
-### 사용법
+### HOW TO USE
 
 ```kotlin
-cameraManager.changeCameraMode(CameraMode.Image or CameraMode.Video) // 사진, 비디오 모드 변경
-cameraManager.lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA or CameraSelector.DEFAULT_BACK_CAMERA // 전면, 후면 카메라 설정
-cameraManager.timer = CameraTimer.OFF // 타이머 설정
-cameraManager.setOnTimerCallback(timerCallback : CameraTimer. Callback) // 카메라 타이머 콜백
-cameraManager.flashMode = DFCameraXCompat.FLASH_MODE_ON or DFCameraXCompat.FLASH_MODE_OFF // 플래시 설정
-cameraManager.getSupportedResolutions() // 지원하는 비디오 화질 가져옴 (previewStreamState가 Stream일 경우 호출 가능)
-cameraManager.setZoomRatio(zoomRatio : Float) // 줌 설정 (minZoomRatio ~ maxZoomRatio)
-cameraManager.setLinearZoom(linearZoom : Float) // 줌 설정 (0F ~ 1F)
+cameraManager.changeCameraMode(CameraMode.Image or CameraMode.Video) // Switch the mode for capture
+cameraManager.lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA or CameraSelector.DEFAULT_BACK_CAMERA // Switch lens facing
+cameraManager.timer = CameraTimer.OFF // Set timer
+cameraManager.setOnTimerCallback(timerCallback : CameraTimer.Callback) // Set timer callback
+cameraManager.flashMode = DFCameraXCompat.FLASH_MODE_ON or DFCameraXCompat.FLASH_MODE_OFF // Set flash
+cameraManager.getSupportedResolutions() // Get supported resolutions for video capture (executable when previewStreamState == Stream)
+cameraManager.setZoomRatio(zoomRatio : Float) // Set zoom ratio (minZoomRatio ~ maxZoomRatio)
+cameraManager.setLinearZoom(linearZoom : Float) // Set linear zoom (0F ~ 1F)
 
 
-cameraManager.takePicture() // 사진 촬영
-cameraManager.recordVideo() // 동영상 촬영
-cameraManager.stopRecording() // 동영상 촬영 중지
+cameraManager.takePicture() 
+cameraManager.recordVideo() 
+cameraManager.stopRecording()
 ```
